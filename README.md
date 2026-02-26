@@ -20,6 +20,32 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Database (PostgreSQL)
+
+The admin panel uses **MVC** with **PostgreSQL** (database: `nice_housing`).
+
+1. **Create database and user** (if needed):
+   - Create DB: `CREATE DATABASE nice_housing;`
+   - User: `root` / Password: `123456` (or set in `.env.local`)
+
+2. **Environment**: Copy or set in `.env.local`:
+   ```env
+   DATABASE_URL=postgresql://root:123456@localhost:5432/nice_housing
+   ```
+
+3. **Run schema and seed**:
+   ```bash
+   psql -U root -d nice_housing -f scripts/schema.sql
+   psql -U root -d nice_housing -f scripts/seed-content.sql
+   ```
+
+4. **Structure**:
+   - **Models** (`src/models/`): User, Property, Booking, BlogPost, Content (terms/policy)
+   - **API routes** (`src/app/api/`): CRUD for properties, bookings, users, blogs, content, dashboard stats
+   - **Admin pages** (`src/app/admin/`): Dashboard, Properties, Bookings, Users, Blogs, Content — all wired to the API
+
+Table columns match the website UI: `users`, `properties`, `bookings`, `blog_posts`, `terms_sections`, `policy_sections`.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

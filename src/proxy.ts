@@ -3,9 +3,9 @@ import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
 const ADMIN_COOKIE_NAME = "admin_token";
-const JWT_SECRET = process.env.JWT_SECRET ?? "nicehousing-jwt-secret-change-in-production";
+const JWT_SECRET = process.env.JWT_SECRET ?? "Ninehousing-jwt-secret-change-in-production";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (!pathname.startsWith("/admin")) {

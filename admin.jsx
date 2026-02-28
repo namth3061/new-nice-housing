@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  LayoutDashboard, 
-  Building2, 
-  CalendarCheck, 
-  Users, 
-  TicketPercent, 
-  Plus, 
-  Search, 
-  Filter, 
+import {
+  LayoutDashboard,
+  Building2,
+  CalendarCheck,
+  Users,
+  TicketPercent,
+  Plus,
+  Search,
+  Filter,
   MoreVertical,
   ChevronRight,
   ChevronLeft,
@@ -23,16 +23,16 @@ import {
   Edit3,
   MapPin
 } from 'lucide-react';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  AreaChart, 
-  Area 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  AreaChart,
+  Area
 } from 'recharts';
 
 // --- UTILS ---
@@ -88,7 +88,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     <div className="w-64 bg-slate-900 text-white h-screen fixed left-0 top-0 flex flex-col z-40">
       <div className="p-6 text-2xl font-bold border-b border-slate-800 flex items-center gap-2" style={{ color: THEME_COLOR }}>
         <Briefcase size={28} />
-        <span>NiceHousing</span>
+        <span>NineHousing</span>
       </div>
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {menuItems.map((item) => (
@@ -96,9 +96,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
             key={item.id}
             onClick={() => setActiveTab(item.id)}
             style={activeTab === item.id ? { backgroundColor: THEME_COLOR, color: '#0f172a' } : {}}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-              activeTab === item.id ? 'shadow-lg shadow-black/20 font-bold' : 'text-slate-400 hover:bg-slate-800 hover:text-white font-medium'
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === item.id ? 'shadow-lg shadow-black/20 font-bold' : 'text-slate-400 hover:bg-slate-800 hover:text-white font-medium'
+              }`}
           >
             <item.icon size={20} />
             <span>{item.label}</span>
@@ -110,7 +109,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-slate-900" style={{ backgroundColor: THEME_COLOR }}>A</div>
           <div>
             <p className="text-sm font-semibold">Quản trị viên</p>
-            <p className="text-xs text-slate-500">NiceHousing Admin</p>
+            <p className="text-xs text-slate-500">NineHousing Admin</p>
           </div>
         </div>
       </div>
@@ -155,16 +154,16 @@ const DashboardView = () => (
             <AreaChart data={REVENUE_DATA}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={THEME_COLOR} stopOpacity={0.2}/>
-                  <stop offset="95%" stopColor={THEME_COLOR} stopOpacity={0}/>
+                  <stop offset="5%" stopColor={THEME_COLOR} stopOpacity={0.2} />
+                  <stop offset="95%" stopColor={THEME_COLOR} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} 
-                tickFormatter={(value) => `${value/1000000}M`}
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }}
+                tickFormatter={(value) => `${value / 1000000}M`}
               />
-              <Tooltip 
+              <Tooltip
                 formatter={(value) => formatVND(value)}
                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
               />
@@ -173,7 +172,7 @@ const DashboardView = () => (
           </ResponsiveContainer>
         </div>
       </div>
-      
+
       <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
         <h3 className="font-bold text-slate-800 mb-6">Booking gần đây</h3>
         <div className="space-y-4">
@@ -222,7 +221,7 @@ const AmenitiesView = ({ amenities, setAmenities }) => {
           <h2 className="text-2xl font-bold text-slate-800">Quản lý Tiện ích</h2>
           <p className="text-sm text-slate-500">Quản lý danh mục các dịch vụ đi kèm chỗ nghỉ</p>
         </div>
-        <button 
+        <button
           onClick={() => { setEditingItem(null); setInputValue(''); setShowModal(true); }}
           style={{ backgroundColor: THEME_COLOR }}
           className="text-slate-900 px-5 py-2.5 rounded-xl flex items-center gap-2 font-bold hover:brightness-95 transition-all shadow-md"
@@ -275,13 +274,13 @@ const AmenitiesView = ({ amenities, setAmenities }) => {
             <div className="p-6 space-y-4">
               <div className="space-y-1">
                 <label className="text-sm font-medium text-slate-700">Tên tiện ích</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  className="w-full p-2.5 border rounded-xl outline-none focus:ring-2" 
-                  style={{'--tw-ring-color': THEME_COLOR}}
-                  placeholder="VD: Phòng Gym, Sauna..." 
+                  className="w-full p-2.5 border rounded-xl outline-none focus:ring-2"
+                  style={{ '--tw-ring-color': THEME_COLOR }}
+                  placeholder="VD: Phòng Gym, Sauna..."
                 />
               </div>
             </div>
@@ -341,7 +340,7 @@ const PropertyView = ({ amenitiesList }) => {
   };
 
   const renderStep = () => {
-    switch(currentStep) {
+    switch (currentStep) {
       case 1:
         return (
           <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
@@ -349,16 +348,16 @@ const PropertyView = ({ amenitiesList }) => {
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 space-y-1">
                 <label className="text-sm font-semibold text-slate-700">Tên chỗ nghỉ</label>
-                <input type="text" className="w-full p-3 border rounded-xl outline-none focus:ring-2" style={{'--tw-ring-color': THEME_COLOR}} placeholder="VD: Beachfront Luxury Villa" />
+                <input type="text" className="w-full p-3 border rounded-xl outline-none focus:ring-2" style={{ '--tw-ring-color': THEME_COLOR }} placeholder="VD: Beachfront Luxury Villa" />
               </div>
-              
+
               <div className="space-y-1">
                 <label className="text-sm font-semibold text-slate-700">Tỉnh / Thành phố</label>
-                <select 
+                <select
                   value={selectedGeo.p}
                   onChange={handleProvinceChange}
-                  className="w-full p-3 border rounded-xl outline-none focus:ring-2" 
-                  style={{'--tw-ring-color': THEME_COLOR}}
+                  className="w-full p-3 border rounded-xl outline-none focus:ring-2"
+                  style={{ '--tw-ring-color': THEME_COLOR }}
                 >
                   <option value="">Chọn Tỉnh/Thành</option>
                   {provinces.map(p => <option key={p.code} value={p.code}>{p.name}</option>)}
@@ -367,12 +366,12 @@ const PropertyView = ({ amenitiesList }) => {
 
               <div className="space-y-1">
                 <label className="text-sm font-semibold text-slate-700">Quận / Huyện</label>
-                <select 
+                <select
                   disabled={!selectedGeo.p}
                   value={selectedGeo.d}
                   onChange={handleDistrictChange}
-                  className="w-full p-3 border rounded-xl outline-none focus:ring-2 disabled:bg-slate-50" 
-                  style={{'--tw-ring-color': THEME_COLOR}}
+                  className="w-full p-3 border rounded-xl outline-none focus:ring-2 disabled:bg-slate-50"
+                  style={{ '--tw-ring-color': THEME_COLOR }}
                 >
                   <option value="">Chọn Quận/Huyện</option>
                   {districts.map(d => <option key={d.code} value={d.code}>{d.name}</option>)}
@@ -381,12 +380,12 @@ const PropertyView = ({ amenitiesList }) => {
 
               <div className="space-y-1">
                 <label className="text-sm font-semibold text-slate-700">Phường / Xã</label>
-                <select 
+                <select
                   disabled={!selectedGeo.d}
                   value={selectedGeo.w}
                   onChange={(e) => setSelectedGeo(prev => ({ ...prev, w: e.target.value }))}
-                  className="w-full p-3 border rounded-xl outline-none focus:ring-2 disabled:bg-slate-50" 
-                  style={{'--tw-ring-color': THEME_COLOR}}
+                  className="w-full p-3 border rounded-xl outline-none focus:ring-2 disabled:bg-slate-50"
+                  style={{ '--tw-ring-color': THEME_COLOR }}
                 >
                   <option value="">Chọn Phường/Xã</option>
                   {wards.map(w => <option key={w.code} value={w.code}>{w.name}</option>)}
@@ -395,14 +394,14 @@ const PropertyView = ({ amenitiesList }) => {
 
               <div className="space-y-1">
                 <label className="text-sm font-semibold text-slate-700">Địa chỉ cụ thể</label>
-                <input type="text" className="w-full p-3 border rounded-xl outline-none focus:ring-2" style={{'--tw-ring-color': THEME_COLOR}} placeholder="Số nhà, tên đường..." />
+                <input type="text" className="w-full p-3 border rounded-xl outline-none focus:ring-2" style={{ '--tw-ring-color': THEME_COLOR }} placeholder="Số nhà, tên đường..." />
               </div>
 
               <div className="col-span-2 space-y-1">
                 <label className="text-sm font-semibold text-slate-700">Mô tả chi tiết</label>
-                <textarea 
-                  className="w-full p-3 border rounded-xl outline-none focus:ring-2 h-32" 
-                  style={{'--tw-ring-color': THEME_COLOR}}
+                <textarea
+                  className="w-full p-3 border rounded-xl outline-none focus:ring-2 h-32"
+                  style={{ '--tw-ring-color': THEME_COLOR }}
                   placeholder="Nhập giới thiệu về chỗ nghỉ của bạn (Tiện ích đặc biệt, vị trí thuận lợi, quy định chung...)"
                 ></textarea>
               </div>
@@ -442,13 +441,13 @@ const PropertyView = ({ amenitiesList }) => {
               <div className="space-y-1">
                 <label className="text-sm font-semibold text-slate-700">Giá thuê theo đêm</label>
                 <div className="relative">
-                  <input type="number" className="w-full pr-12 p-3 border rounded-xl outline-none focus:ring-2" style={{'--tw-ring-color': THEME_COLOR}} placeholder="0" />
+                  <input type="number" className="w-full pr-12 p-3 border rounded-xl outline-none focus:ring-2" style={{ '--tw-ring-color': THEME_COLOR }} placeholder="0" />
                   <span className="absolute right-4 top-3 text-slate-400 font-bold">₫</span>
                 </div>
               </div>
               <div className="space-y-1 mt-4">
                 <label className="text-sm font-semibold text-slate-700">Số lượng khách tối đa</label>
-                <input type="number" className="w-full p-3 border rounded-xl outline-none focus:ring-2" style={{'--tw-ring-color': THEME_COLOR}} placeholder="VD: 4" />
+                <input type="number" className="w-full p-3 border rounded-xl outline-none focus:ring-2" style={{ '--tw-ring-color': THEME_COLOR }} placeholder="VD: 4" />
               </div>
             </div>
           </div>
@@ -464,14 +463,14 @@ const PropertyView = ({ amenitiesList }) => {
           <button onClick={() => setShowAddForm(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><ChevronLeft size={24} /></button>
           <div>
             <h2 className="text-2xl font-bold text-slate-800">Đăng chỗ nghỉ mới</h2>
-            <p className="text-sm text-slate-500">Hoàn thành các bước để hiển thị tài sản trên NiceHousing</p>
+            <p className="text-sm text-slate-500">Hoàn thành các bước để hiển thị tài sản trên NineHousing</p>
           </div>
         </div>
 
         {/* Form Steps Indicator */}
         <div className="flex justify-between items-center px-12 relative mb-8">
           <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-100 -translate-y-1/2 -z-10"></div>
-          <div className="absolute top-1/2 left-0 h-1 bg-slate-900 -translate-y-1/2 -z-10 transition-all duration-500" style={{ width: `${((currentStep-1)/3)*100}%` }}></div>
+          <div className="absolute top-1/2 left-0 h-1 bg-slate-900 -translate-y-1/2 -z-10 transition-all duration-500" style={{ width: `${((currentStep - 1) / 3) * 100}%` }}></div>
           {[1, 2, 3, 4].map(s => (
             <div key={s} className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-all ${currentStep >= s ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-400'}`}>
               {s}
@@ -578,7 +577,7 @@ export default function App() {
   const [amenities, setAmenities] = useState(INITIAL_AMENITIES);
 
   const renderContent = () => {
-    switch(activeTab) {
+    switch (activeTab) {
       case 'dashboard': return <DashboardView />;
       case 'properties': return <PropertyView amenitiesList={amenities} />;
       case 'amenities': return <AmenitiesView amenities={amenities} setAmenities={setAmenities} />;
@@ -599,7 +598,7 @@ export default function App() {
         <header className="flex justify-between items-center mb-10">
           <div>
             <h1 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">Cổng Quản Trị</h1>
-            <p className="text-lg font-bold text-slate-800 flex items-center gap-2">Hệ thống NiceHousing <ChevronRight size={16} className="text-slate-300" /> {activeTab === 'dashboard' ? 'Tổng quan' : activeTab === 'properties' ? 'Chỗ nghỉ' : 'Hệ thống'}</p>
+            <p className="text-lg font-bold text-slate-800 flex items-center gap-2">Hệ thống NineHousing <ChevronRight size={16} className="text-slate-300" /> {activeTab === 'dashboard' ? 'Tổng quan' : activeTab === 'properties' ? 'Chỗ nghỉ' : 'Hệ thống'}</p>
           </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-3 px-4 py-2 rounded-2xl border bg-white shadow-sm" style={{ borderColor: `${THEME_COLOR}40` }}>

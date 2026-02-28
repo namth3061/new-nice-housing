@@ -18,7 +18,7 @@ export const BLOG_POSTS: BlogPost[] = [
     excerpt: "Khám phá những bãi biển tuyệt đẹp và resort đẳng cấp từ Bắc vào Nam, phù hợp cho kỳ nghỉ dưỡng đáng nhớ.",
     date: "2026-02-20",
     image: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80",
-    author: "NiceHousing",
+    author: "NineHousing",
     category: "Khám phá",
     content: `Việt Nam sở hữu bờ biển dài hơn 3.260km với vô vàn bãi cát trắng, làn nước trong xanh. Dưới đây là 10 resort biển được đánh giá cao nhất năm 2026.
 
@@ -32,7 +32,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
 **5. The Anam Cam Ranh** – Phong cách Indochine, bãi biển dài với dịch vụ 5 sao chuẩn quốc tế.
 
-Còn 5 resort nữa trong danh sách sẽ được cập nhật trong bài viết tiếp theo. Hãy đặt phòng sớm để nhận ưu đãi từ NiceHousing!`,
+Còn 5 resort nữa trong danh sách sẽ được cập nhật trong bài viết tiếp theo. Hãy đặt phòng sớm để nhận ưu đãi từ NineHousing!`,
   },
   {
     id: 2,
@@ -41,11 +41,11 @@ Còn 5 resort nữa trong danh sách sẽ được cập nhật trong bài viế
     excerpt: "5 bước đơn giản giúp bạn đặt phòng khách sạn trực tuyến an toàn, tránh lừa đảo và nhận được giá tốt nhất.",
     date: "2026-02-18",
     image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80",
-    author: "NiceHousing",
+    author: "NineHousing",
     category: "Mẹo hay",
     content: `Đặt phòng online ngày càng phổ biến nhưng cần cẩn trọng để tránh rủi ro. Dưới đây là hướng dẫn chi tiết.
 
-**Bước 1: Chọn nền tảng uy tín** – Ưu tiên các trang có xác minh đối tác, chính sách hoàn tiền rõ ràng như NiceHousing.
+**Bước 1: Chọn nền tảng uy tín** – Ưu tiên các trang có xác minh đối tác, chính sách hoàn tiền rõ ràng như NineHousing.
 
 **Bước 2: Kiểm tra đánh giá** – Đọc review từ khách thật, chú ý điểm rating và nội dung phản hồi gần nhất.
 
@@ -64,7 +64,7 @@ Chúc bạn có chuyến đi an toàn và vui vẻ!`,
     excerpt: "Du lịch bền vững, staycation và trải nghiệm địa phương đang là xu hướng được ưa chuộng.",
     date: "2026-02-15",
     image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80",
-    author: "NiceHousing",
+    author: "NineHousing",
     category: "Xu hướng",
     content: `Năm 2026, du khách Việt Nam và quốc tế có xu hướng tìm kiếm trải nghiệm nghỉ dưỡng ý nghĩa hơn.
 
@@ -76,7 +76,7 @@ Chúc bạn có chuyến đi an toàn và vui vẻ!`,
 
 **Wellness & Spa** – Các gói chăm sóc sức khỏe, yoga, thiền được đặt nhiều hơn sau giai đoạn bận rộn.
 
-NiceHousing sẽ tiếp tục cập nhật danh sách khách sạn và gói ưu đãi phù hợp từng xu hướng.`,
+NineHousing sẽ tiếp tục cập nhật danh sách khách sạn và gói ưu đãi phù hợp từng xu hướng.`,
   },
   {
     id: 4,
@@ -85,7 +85,7 @@ NiceHousing sẽ tiếp tục cập nhật danh sách khách sạn và gói ưu 
     excerpt: "Gợi ý những khách sạn hạng sang với mức giá hợp lý tại hai thành phố du lịch hàng đầu.",
     date: "2026-02-10",
     image: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80",
-    author: "NiceHousing",
+    author: "NineHousing",
     category: "Gợi ý",
     content: `Bạn muốn trải nghiệm 5 sao nhưng ngân sách có hạn? Dưới đây là lựa chọn cân bằng giữa chất lượng và giá cả.
 
@@ -93,6 +93,6 @@ NiceHousing sẽ tiếp tục cập nhật danh sách khách sạn và gói ưu 
 
 **Đà Nẵng:** InterContinental Danang Sun Peninsula – thiết kế độc đáo, phù hợp dịp đặc biệt. Mường Thanh Luxury – gần biển Mỹ Khê, giá mềm hơn so với mặt bằng 5 sao.
 
-Đăng ký nhận tin NiceHousing để nhận thông báo flash sale và mã giảm giá cho các khách sạn này.`,
+Đăng ký nhận tin NineHousing để nhận thông báo flash sale và mã giảm giá cho các khách sạn này.`,
   },
 ];

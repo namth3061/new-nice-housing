@@ -1,44 +1,131 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, MapPin, Upload, X } from "lucide-react";
+import { ChevronLeft, MapPin, Upload, X, ImageIcon, Sparkles, Banknote } from "lucide-react";
 
-const THEME_COLOR = "#F5D060";
-
-const AMENITIES_OPTIONS = [
-  "Wifi", "Hồ bơi", "Bãi đỗ xe", "Bữa sáng", "Điều hòa", "Spa", "View biển", "Gym", "Bar", "Phòng họp",
+const STEPS = [
+  { num: 1, label: "Thông tin & Vị trí", icon: MapPin },
+  { num: 2, label: "Hình ảnh", icon: ImageIcon },
+  { num: 3, label: "Tiện ích", icon: Sparkles },
+  { num: 4, label: "Giá & Chính sách", icon: Banknote },
 ];
+
+const GENERAL_AMENITIES = [
+  "Air conditioner", "Balcony", "Cable TV", "Heater", "Smoking", "Washing machine", "Wi Fi", "Lift"
+];
+const OUTDOOR_AMENITIES = [
+  "Restaurant", "Shop", "Bus", "Park", "Playground", "Tennis court", "BBQ area", "Parking", "Gym"
+];
+
+interface FormData {
+  name: string;
+  category: string;
+  badge: string;
+  province: string;
+  district: string;
+  ward: string;
+  address: string;
+  description: string;
+  images: (File | string)[];
+  imagePreviews: string[];
+  amenities: string[];
+  pricePerNight: string;
+  priceType: string;
+  maxGuests: string;
+  status: "available" | "unavailable";
+  specsBedrooms: string;
+  specsBathrooms: string;
+  specsArea: string;
+}
+
+const emptyForm: FormData = {
+  name: "",
+  category: "",
+  badge: "",
+  province: "",
+  district: "",
+  ward: "",
+  address: "",
+  description: "",
+  images: [],
+  imagePreviews: [],
+  amenities: [],
+  pricePerNight: "",
+  priceType: "month",
+  maxGuests: "",
+  status: "available",
+  specsBedrooms: "",
+  specsBathrooms: "",
+  specsArea: "",
+};
+
+interface GeoItem {
+  code: number;
+  name: string;
+  districts?: { code: number; name: string }[];
+  wards?: { code: number; name: string }[];
+}
+
+/** Đảm bảo URL ảnh từ API hiển thị đúng (path có leading slash, có thể thêm origin) */
+function toDisplayImageUrl(url: string, addOrigin = false): string {
+  if (!url || typeof url !== "string") return "";
+  const t = url.trim();
+  let path = t;
+  if (!t.startsWith("http://") && !t.startsWith("https://")) {
+    path = t.startsWith("/") ? t : `/${t.replace(/^\.\/+/, "")}`;
+  }
+  if (addOrigin && typeof window !== "undefined" && path.startsWith("/")) {
+    return `${window.location.origin}${path}`;
+  }
+  return path;
+}
+
+/** Lấy mảng URL ảnh từ response API (hỗ trợ camelCase, snake_case, string hoặc array) */
+function getImageUrlsFromApi(data: Record<string, unknown>): string[] {
+  const image = (data.image ?? data.image_url) as string | undefined;
+  const images = data.images ?? data.images_list;
+  let list: string[] = [];
+  if (Array.isArray(images) && images.length > 0) {
+    list = images.filter((u): u is string => typeof u === "string" && u.trim() !== "");
+  } else if (image && typeof image === "string" && image.trim() !== "") {
+    list = [image.trim()];
+  }
+  return list;
+}
+
+function FieldLabel({ icon: Icon, children }: { icon?: React.ElementType; children: React.ReactNode }) {
+  return (
+    <label className="admin-form-label">
+      {Icon && <Icon size={13} />}
+      {children}
+    </label>
+  );
+}
 
 export default function EditPropertyPage() {
   const router = useRouter();
   const params = useParams();
   const id = Number(params?.id);
-  const [hotel, setHotel] = useState<{
-    id: number;
-    name: string;
-    location: string;
-    address?: string;
-    description: string;
-    image: string;
-    images: string[];
-    rawPrice: number;
-    amenities: string[];
-    maxGuests?: number;
-  } | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const [step, setStep] = useState(1);
-  const [name, setName] = useState("");
-  const [location, setLocation] = useState("");
-  const [address, setAddress] = useState("");
-  const [description, setDescription] = useState("");
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [amenities, setAmenities] = useState<string[]>([]);
-  const [pricePerNight, setPricePerNight] = useState("");
-  const [maxGuests, setMaxGuests] = useState("");
   const [saving, setSaving] = useState(false);
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState<FormData>(emptyForm);
+  const [provinces, setProvinces] = useState<GeoItem[]>([]);
+  const [districts, setDistricts] = useState<GeoItem[]>([]);
+  const [wards, setWards] = useState<GeoItem[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const initialLocationRef = useRef<{ province?: string; district?: string; ward?: string }>({});
+  const locationResolvedRef = useRef({ province: false, district: false, ward: false });
+  const [uploadingCount, setUploadingCount] = useState(0);
+
+  useEffect(() => {
+    fetch("https://provinces.open-api.vn/api/p/")
+      .then((res) => res.json())
+      .then(setProvinces)
+      .catch(console.error);
+  }, []);
 
   useEffect(() => {
     if (!id) {
@@ -48,65 +135,211 @@ export default function EditPropertyPage() {
     fetch(`/api/properties/${id}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        setHotel(data);
-        if (data) {
-          setName(data.name);
-          setLocation(data.location ?? "");
-          setAddress(data.address ?? "");
-          setDescription(data.description ?? "");
-          const imgs = data.images?.length ? data.images : (data.image ? [data.image] : []);
-          setImagePreviews(imgs);
-          setAmenities(data.amenities ?? []);
-          setPricePerNight(String(data.rawPrice ?? 0));
-          setMaxGuests(String(data.maxGuests ?? 2));
+        if (!data) {
+          setLoadError("Không tìm thấy chỗ nghỉ.");
+          return;
         }
+        const rawImgs = getImageUrlsFromApi(data as Record<string, unknown>);
+        const imgs = rawImgs.map((u) => toDisplayImageUrl(u, true)).filter(Boolean);
+        initialLocationRef.current = {
+          province: data.province ?? "",
+          district: data.district ?? "",
+          ward: data.ward ?? "",
+        };
+        locationResolvedRef.current = { province: false, district: false, ward: false };
+        setForm({
+          name: data.name ?? "",
+          category: data.category ?? "",
+          badge: data.badge ?? "",
+          province: "",
+          district: "",
+          ward: "",
+          address: data.address ?? "",
+          description: data.description ?? "",
+          images: [],
+          imagePreviews: imgs,
+          amenities: data.amenities ?? [],
+          pricePerNight: String(data.rawPrice ?? 0),
+          priceType: data.priceType || "month",
+          maxGuests: String(data.maxGuests ?? 2),
+          status: data.status === "unavailable" ? "unavailable" : "available",
+          specsBedrooms: String(data.specs?.bedrooms ?? ""),
+          specsBathrooms: String(data.specs?.bathrooms ?? ""),
+          specsArea: String(data.specs?.area ?? ""),
+        });
       })
-      .catch(console.error)
+      .catch(() => setLoadError("Lỗi tải dữ liệu."))
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto py-12 text-slate-500">Đang tải...</div>
-    );
-  }
+  const loadDistricts = (provinceCode: string) => {
+    if (!provinceCode) {
+      setDistricts([]);
+      setWards([]);
+      return;
+    }
+    fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`)
+      .then((res) => res.json())
+      .then((data: GeoItem) => setDistricts(data.districts ?? []))
+      .catch(console.error);
+    setWards([]);
+  };
 
-  if (!hotel) {
-    return (
-      <div className="max-w-4xl mx-auto py-12">
-        <p className="text-slate-500">Không tìm thấy chỗ nghỉ.</p>
-        <Link href="/admin/properties" className="text-sm font-semibold mt-4 inline-block" style={{ color: THEME_COLOR }}>
-          ← Quay lại danh sách
-        </Link>
-      </div>
-    );
-  }
+  const loadWards = (districtCode: string) => {
+    if (!districtCode) {
+      setWards([]);
+      return;
+    }
+    fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`)
+      .then((res) => res.json())
+      .then((data: GeoItem) => setWards(data.wards ?? []))
+      .catch(console.error);
+  };
 
-  const inputClass = "w-full p-3 border rounded-xl outline-none focus:ring-2 border-slate-200";
-  const focusRing = { ["--tw-ring-color" as string]: THEME_COLOR };
+  useEffect(() => {
+    if (loadError || !provinces.length || locationResolvedRef.current.province) return;
+    const provinceName = initialLocationRef.current.province;
+    if (!provinceName) return;
+    const p = provinces.find((x) => x.name === provinceName);
+    if (p) {
+      locationResolvedRef.current.province = true;
+      setForm((f) => ({ ...f, province: String(p.code) }));
+      loadDistricts(String(p.code));
+    }
+  }, [provinces, loadError]);
 
-  const toggleAmenity = (a: string) => {
-    setAmenities((prev) =>
-      prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]
+  useEffect(() => {
+    if (loadError || !districts.length || locationResolvedRef.current.district) return;
+    const districtName = initialLocationRef.current.district;
+    if (!districtName) return;
+    const d = districts.find((x) => x.name === districtName);
+    if (d) {
+      locationResolvedRef.current.district = true;
+      setForm((f) => ({ ...f, district: String(d.code) }));
+      loadWards(String(d.code));
+    }
+  }, [districts, loadError]);
+
+  useEffect(() => {
+    if (loadError || !wards.length || locationResolvedRef.current.ward) return;
+    const wardName = initialLocationRef.current.ward;
+    if (!wardName) return;
+    const w = wards.find((x) => x.name === wardName);
+    if (w) {
+      locationResolvedRef.current.ward = true;
+      setForm((f) => ({ ...f, ward: String(w.code) }));
+    }
+  }, [wards, loadError]);
+
+  const update = (part: Partial<FormData>) => setForm((f) => ({ ...f, ...part }));
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+    const newFiles = Array.from(files).slice(0, 10 - form.imagePreviews.length);
+    if (!newFiles.length) return;
+    // Show blob previews immediately for good UX
+    const blobPreviews = newFiles.map((f) => URL.createObjectURL(f));
+    setForm((prev) => ({
+      ...prev,
+      images: [...prev.images, ...newFiles],
+      imagePreviews: [...prev.imagePreviews, ...blobPreviews],
+    }));
+    // Upload each file and replace blob URL with server path
+    setUploadingCount((c) => c + newFiles.length);
+    await Promise.all(
+      newFiles.map(async (file, idx) => {
+        try {
+          const fd = new FormData();
+          fd.append("file", file);
+          const res = await fetch("/api/upload/image", { method: "POST", body: fd });
+          const json = await res.json();
+          if (json.url) {
+            const serverUrl = json.url as string;
+            setForm((prev) => {
+              const blobUrl = blobPreviews[idx];
+              const newPreviews = prev.imagePreviews.map((u) => (u === blobUrl ? serverUrl : u));
+              URL.revokeObjectURL(blobUrl);
+              return { ...prev, imagePreviews: newPreviews, images: newPreviews.map(() => "") };
+            });
+          }
+        } catch {
+          // keep blob preview if upload fails
+        } finally {
+          setUploadingCount((c) => c - 1);
+        }
+      })
     );
+    e.target.value = "";
+  };
+
+  const removeImage = (index: number) => {
+    const preview = form.imagePreviews[index];
+    if (typeof preview === "string" && preview.startsWith("blob:")) URL.revokeObjectURL(preview);
+    update({
+      images: form.images.filter((_, i) => i !== index),
+      imagePreviews: form.imagePreviews.filter((_, i) => i !== index),
+    });
+  };
+
+  const avatarUrl = form.imagePreviews[0];
+  const displayAvatarUrl =
+    typeof avatarUrl === "string"
+      ? avatarUrl.startsWith("blob:")
+        ? avatarUrl
+        : toDisplayImageUrl(avatarUrl, true)
+      : "";
+
+  const toggleAmenity = (name: string) => {
+    update({
+      amenities: form.amenities.includes(name)
+        ? form.amenities.filter((a) => a !== name)
+        : [...form.amenities, name],
+    });
   };
 
   const handleSubmit = async () => {
     setSaving(true);
     try {
+      const provinceName = provinces.find((p) => String(p.code) === form.province)?.name ?? "";
+      const districtName = districts.find((d) => String(d.code) === form.district)?.name ?? "";
+      const wardName = wards.find((w) => String(w.code) === form.ward)?.name ?? "";
+      const locationStr = [provinceName, districtName, wardName].filter(Boolean).join(", ") || form.address;
+      // Send all previews (existing server paths + newly uploaded paths), strip blob: URLs as fallback
+      const rawUrls = form.imagePreviews.filter((p): p is string => typeof p === "string" && !p.startsWith("blob:"));
+      // Strip origin prefix so DB stores relative paths
+      const imageUrls = rawUrls.map((url) => {
+        if (typeof window !== "undefined" && url.startsWith(window.location.origin)) {
+          const path = url.slice(window.location.origin.length);
+          return path || "/";
+        }
+        return url;
+      });
       const res = await fetch(`/api/properties/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name,
-          location,
-          address,
-          description,
-          images: imagePreviews,
-          image: imagePreviews[0] || hotel.image,
-          rawPrice: Number(pricePerNight) || 0,
-          amenities,
-          maxGuests: Number(maxGuests) || 2,
+          name: form.name,
+          category: form.category.trim(),
+          badge: form.badge.trim(),
+          location: locationStr,
+          province: provinceName,
+          district: districtName,
+          ward: wardName,
+          address: form.address,
+          description: form.description,
+          image: imageUrls[0] || "",
+          images: imageUrls,
+          rawPrice: Number(form.pricePerNight) || 0,
+          priceType: form.priceType,
+          amenities: form.amenities,
+          specs: {
+            bedrooms: form.specsBedrooms,
+            bathrooms: form.specsBathrooms,
+            area: form.specsArea,
+          },
+          maxGuests: Number(form.maxGuests) || 2,
+          status: form.status,
         }),
       });
       if (res.ok) router.push("/admin/properties");
@@ -115,114 +348,379 @@ export default function EditPropertyPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="admin-form-root">
+        <div className="admin-form-header">
+          <Link href="/admin/properties" className="admin-form-back" aria-label="Quay lại">
+            <ChevronLeft size={18} />
+          </Link>
+          <p className="admin-form-subtitle">Đang tải...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="admin-form-root">
+        <div className="admin-form-header">
+          <Link href="/admin/properties" className="admin-form-back" aria-label="Quay lại">
+            <ChevronLeft size={18} />
+          </Link>
+          <p className="admin-form-subtitle text-red-600">{loadError}</p>
+          <Link href="/admin/properties" className="text-sm font-semibold mt-2 inline-block" style={{ color: "var(--a-gold)" }}>
+            ← Quay lại danh sách
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div className="flex items-center gap-4">
-        <Link href="/admin/properties" className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-          <ChevronLeft size={24} />
+    <div className="admin-form-root">
+      <div className="admin-form-header">
+        <Link href="/admin/properties" className="admin-form-back" aria-label="Quay lại">
+          <ChevronLeft size={18} />
         </Link>
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Chỉnh sửa chỗ nghỉ</h2>
-          <p className="text-sm text-slate-500">{hotel.name}</p>
+        {displayAvatarUrl ? (
+          <img
+            src={displayAvatarUrl}
+            alt=""
+            className="admin-form-avatar"
+            style={{ width: 48, height: 48, borderRadius: 12, objectFit: "cover", flexShrink: 0 }}
+          />
+        ) : null}
+        <div className="min-w-0">
+          <h1 className="admin-form-title">Chỉnh sửa căn hộ</h1>
+          <p className="admin-form-subtitle">Cập nhật thông tin qua 4 bước</p>
         </div>
       </div>
 
-      <div className="flex justify-between items-center px-12 relative mb-8">
-        <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-100 -translate-y-1/2 -z-10" />
-        <div
-          className="absolute top-1/2 left-0 h-1 -translate-y-1/2 -z-10 transition-all duration-500"
-          style={{ width: `${((step - 1) / 3) * 100}%`, backgroundColor: THEME_COLOR }}
-        />
-        {[1, 2, 3, 4].map((s) => (
-          <div
-            key={s}
-            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-all ${
-              step >= s ? "bg-slate-900 border-slate-900 text-white" : "bg-white border-slate-200 text-slate-400"
-            }`}
-          >
-            {s}
-          </div>
-        ))}
+      <div className="admin-form-steps">
+        {STEPS.map(({ num, label, icon: Icon }) => {
+          const isActive = step === num;
+          const isDone = step > num;
+          return (
+            <button
+              key={num}
+              type="button"
+              className={`admin-form-step${isActive ? " active" : ""}${isDone ? " done" : ""}`}
+              onClick={() => setStep(num)}
+              aria-current={isActive ? "step" : undefined}
+            >
+              <Icon size={13} />
+              {label}
+            </button>
+          );
+        })}
       </div>
 
-      <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm min-h-[400px]">
-        {step === 1 && (
-          <div className="space-y-6">
-            <h4 className="font-bold text-lg flex items-center gap-2"><MapPin size={20} /> Thông tin & Vị trí</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2 space-y-1">
-                <label className="text-sm font-semibold text-slate-700">Tên chỗ nghỉ</label>
-                <input type="text" className={inputClass} style={focusRing} value={name} onChange={(e) => setName(e.target.value)} />
+      <div className="admin-form-card">
+        <div className="admin-form-card-header">
+          {React.createElement(STEPS[step - 1].icon, { size: 14, style: { color: "var(--a-gold)" } })}
+          <span className="admin-form-card-header-title">{STEPS[step - 1].label}</span>
+          <div className="admin-form-card-header-dot" />
+        </div>
+        <div className="admin-form-card-body" style={{ minHeight: "320px" }}>
+          {step === 1 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              <div className="admin-form-field">
+                <FieldLabel icon={MapPin}>Tên căn hộ</FieldLabel>
+                <input
+                  type="text"
+                  className="admin-form-title-input"
+                  placeholder="VD: Apartment 401, 9/29 Nguyen Chi Thanh Str"
+                  value={form.name}
+                  onChange={(e) => update({ name: e.target.value })}
+                />
               </div>
-              <div className="col-span-2 space-y-1">
-                <label className="text-sm font-semibold text-slate-700">Vị trí (hiển thị)</label>
-                <input type="text" className={inputClass} style={focusRing} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="VD: Sơn Trà, Đà Nẵng" />
+              <div className="admin-form-field">
+                <FieldLabel>Danh mục</FieldLabel>
+                <input
+                  type="text"
+                  className="admin-form-input"
+                  placeholder="VD: Căn hộ, Biệt thự, Nhà phố"
+                  value={form.category}
+                  onChange={(e) => update({ category: e.target.value })}
+                />
               </div>
-              <div className="col-span-2 space-y-1">
-                <label className="text-sm font-semibold text-slate-700">Mô tả</label>
-                <textarea className={inputClass + " h-32"} style={focusRing} value={description} onChange={(e) => setDescription(e.target.value)} />
+              <div className="admin-form-field">
+                <FieldLabel>Badge (hiển thị trên thẻ)</FieldLabel>
+                <input
+                  type="text"
+                  className="admin-form-input"
+                  placeholder="VD: Nổi bật, Giảm 20%, Mới"
+                  value={form.badge}
+                  onChange={(e) => update({ badge: e.target.value })}
+                />
+              </div>
+              <div className="admin-form-row2">
+                <div className="admin-form-field">
+                  <FieldLabel>Tỉnh / Thành phố</FieldLabel>
+                  <select
+                    value={form.province}
+                    onChange={(e) => {
+                      update({ province: e.target.value, district: "", ward: "" });
+                      loadDistricts(e.target.value);
+                    }}
+                    className="admin-form-select"
+                  >
+                    <option value="">Chọn Tỉnh/Thành</option>
+                    {provinces.map((p) => (
+                      <option key={p.code} value={p.code}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="admin-form-field">
+                  <FieldLabel>Quận / Huyện</FieldLabel>
+                  <select
+                    disabled={!form.province}
+                    value={form.district}
+                    onChange={(e) => {
+                      update({ district: e.target.value, ward: "" });
+                      loadWards(e.target.value);
+                    }}
+                    className="admin-form-select"
+                  >
+                    <option value="">Chọn Quận/Huyện</option>
+                    {districts.map((d) => (
+                      <option key={d.code} value={d.code}>{d.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="admin-form-field">
+                <FieldLabel>Phường / Xã</FieldLabel>
+                <select
+                  disabled={!form.district}
+                  value={form.ward}
+                  onChange={(e) => update({ ward: e.target.value })}
+                  className="admin-form-select"
+                >
+                  <option value="">Chọn Phường/Xã</option>
+                  {wards.map((w) => (
+                    <option key={w.code} value={w.code}>{w.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="admin-form-field">
+                <FieldLabel>Địa chỉ cụ thể</FieldLabel>
+                <input
+                  type="text"
+                  className="admin-form-input"
+                  placeholder="Số nhà, tên đường..."
+                  value={form.address}
+                  onChange={(e) => update({ address: e.target.value })}
+                />
+              </div>
+              <div className="admin-form-field">
+                <FieldLabel>Mô tả chi tiết</FieldLabel>
+                <textarea
+                  className="admin-form-input"
+                  style={{ minHeight: "100px" }}
+                  placeholder="Giới thiệu về căn hộ, dịch vụ..."
+                  value={form.description}
+                  onChange={(e) => update({ description: e.target.value })}
+                />
+              </div>
+              <div className="admin-form-row2">
+                <div className="admin-form-field">
+                  <FieldLabel>Phòng ngủ</FieldLabel>
+                  <input
+                    type="number"
+                    className="admin-form-input"
+                    placeholder="VD: 1"
+                    value={form.specsBedrooms}
+                    onChange={(e) => update({ specsBedrooms: e.target.value })}
+                  />
+                </div>
+                <div className="admin-form-field">
+                  <FieldLabel>Phòng tắm</FieldLabel>
+                  <input
+                    type="number"
+                    className="admin-form-input"
+                    placeholder="VD: 1"
+                    value={form.specsBathrooms}
+                    onChange={(e) => update({ specsBathrooms: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="admin-form-field" style={{ maxWidth: "160px" }}>
+                <FieldLabel>Diện tích (m²)</FieldLabel>
+                <input
+                  type="number"
+                  className="admin-form-input"
+                  placeholder="VD: 60"
+                  value={form.specsArea}
+                  onChange={(e) => update({ specsArea: e.target.value })}
+                />
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {step === 2 && (
-          <div className="space-y-4 py-4">
-            <h4 className="font-bold text-lg">Hình ảnh</h4>
-            <div className="flex flex-wrap gap-4">
-              {imagePreviews.map((url, i) => (
-                <img key={i} src={url} alt="" className="w-28 h-28 object-cover rounded-xl border" />
-              ))}
-            </div>
-            <p className="text-sm text-slate-500">Để thay ảnh, tích hợp API upload (Cloudinary, S3, ...) tại đây.</p>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="space-y-4">
-            <h4 className="font-bold text-lg">Tiện ích</h4>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {AMENITIES_OPTIONS.map((name) => (
-                <label key={name} className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer ${amenities.includes(name) ? "border-slate-900 bg-slate-50" : ""}`}>
-                  <input type="checkbox" checked={amenities.includes(name)} onChange={() => toggleAmenity(name)} className="w-5 h-5 rounded" style={{ accentColor: THEME_COLOR }} />
-                  <span className="text-sm font-semibold text-slate-700">{name}</span>
+          {step === 2 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {form.imagePreviews.length === 0 ? (
+                <label className="admin-form-upload-zone">
+                  <div className="admin-form-upload-icon">
+                    <Upload size={22} />
+                  </div>
+                  <div className="admin-form-upload-title">Kéo thả ảnh vào đây hoặc nhấn để chọn</div>
+                  <div className="admin-form-upload-sub">Tối đa 10 ảnh · PNG, JPG · 5MB/ảnh</div>
+                  <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageChange} />
                 </label>
-              ))}
+              ) : (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+                  {form.imagePreviews.map((url, i) => {
+                    const src =
+                      typeof url === "string"
+                        ? url.startsWith("blob:")
+                          ? url
+                          : toDisplayImageUrl(url, true)
+                        : "";
+                    return (
+                      <div key={i} className="admin-form-img-preview" style={{ width: "120px", maxHeight: "120px" }}>
+                        <img src={src} alt="" style={{ maxHeight: "120px", objectFit: "cover" }} />
+                        {i === 0 && (
+                          <span style={{ position: "absolute", bottom: "6px", left: "6px", fontSize: "10px", fontWeight: 800, background: "#0f172a", color: "white", padding: "2px 6px", borderRadius: "6px" }}>
+                            Đại diện
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeImage(i)}
+                          className="admin-form-img-remove"
+                          aria-label="Xóa ảnh"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {form.imagePreviews.length < 10 && (
+                    <label className="admin-form-upload-zone" style={{ width: "120px", minHeight: "120px", padding: "16px" }}>
+                      <Upload size={24} style={{ color: "var(--a-gold)" }} />
+                      <span className="admin-form-upload-sub">Thêm ảnh</span>
+                      <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageChange} />
+                    </label>
+                  )}
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )}
 
-        {step === 4 && (
-          <div className="space-y-4 max-w-md">
-            <h4 className="font-bold text-lg">Giá & Chính sách</h4>
-            <div className="space-y-1">
-              <label className="text-sm font-semibold text-slate-700">Giá/đêm (VNĐ)</label>
-              <div className="relative">
-                <input type="number" className={inputClass + " pr-12"} style={focusRing} value={pricePerNight} onChange={(e) => setPricePerNight(e.target.value)} />
-                <span className="absolute right-4 top-3 text-slate-400 font-bold">₫</span>
+          {step === 3 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              <p className="admin-form-label" style={{ textTransform: "none", marginBottom: 4 }}>General Amenities</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "10px" }}>
+                {GENERAL_AMENITIES.map((name) => {
+                  const selected = form.amenities.includes(name);
+                  return (
+                    <label key={name} className={`admin-form-chip${selected ? " selected" : ""}`}>
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={() => toggleAmenity(name)}
+                      />
+                      <span>{name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              <p className="admin-form-label" style={{ textTransform: "none", marginBottom: 4, marginTop: 8 }}>Outdoor facilities</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "10px" }}>
+                {OUTDOOR_AMENITIES.map((name) => {
+                  const selected = form.amenities.includes(name);
+                  return (
+                    <label key={name} className={`admin-form-chip${selected ? " selected" : ""}`}>
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={() => toggleAmenity(name)}
+                      />
+                      <span>{name}</span>
+                    </label>
+                  );
+                })}
               </div>
             </div>
-            <div className="space-y-1">
-              <label className="text-sm font-semibold text-slate-700">Số khách tối đa</label>
-              <input type="number" className={inputClass} style={focusRing} value={maxGuests} onChange={(e) => setMaxGuests(e.target.value)} />
-            </div>
-          </div>
-        )}
-      </div>
+          )}
 
-      <div className="flex justify-between">
-        <button disabled={step === 1} onClick={() => setStep((s) => s - 1)} className="px-6 py-3 rounded-xl font-bold text-slate-600 hover:bg-white border hover:border-slate-200 disabled:opacity-30">
-          Quay lại
-        </button>
-        {step < 4 ? (
-          <button onClick={() => setStep((s) => s + 1)} style={{ backgroundColor: THEME_COLOR }} className="px-10 py-3 text-slate-900 rounded-xl font-bold hover:brightness-95 shadow-lg">
-            Bước tiếp theo
+          {step === 4 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px", maxWidth: "400px" }}>
+              <div style={{ display: "flex", gap: "16px", alignItems: "flex-end" }}>
+                <div className="admin-form-field" style={{ flex: 1 }}>
+                  <FieldLabel icon={Banknote}>Giá thuê ($)</FieldLabel>
+                  <div className="admin-form-slug-wrap">
+                    <span className="admin-form-slug-prefix">$</span>
+                    <input
+                      type="number"
+                      className="admin-form-input slug"
+                      style={{ paddingLeft: "36px" }}
+                      placeholder="0"
+                      value={form.pricePerNight}
+                      onChange={(e) => update({ pricePerNight: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="admin-form-field" style={{ width: "140px" }}>
+                  <FieldLabel>Thuê theo</FieldLabel>
+                  <select
+                    value={form.priceType}
+                    onChange={(e) => update({ priceType: e.target.value })}
+                    className="admin-form-select"
+                  >
+                    <option value="month">Tháng</option>
+                    <option value="day">Ngày</option>
+                  </select>
+                </div>
+              </div>
+              <div className="admin-form-field">
+                <FieldLabel>Số khách tối đa</FieldLabel>
+                <input
+                  type="number"
+                  className="admin-form-input"
+                  placeholder="VD: 4"
+                  value={form.maxGuests}
+                  onChange={(e) => update({ maxGuests: e.target.value })}
+                />
+              </div>
+              <div className="admin-form-field">
+                <FieldLabel>Trạng thái</FieldLabel>
+                <select
+                  value={form.status}
+                  onChange={(e) => update({ status: e.target.value as "available" | "unavailable" })}
+                  className="admin-form-select"
+                >
+                  <option value="available">Available (đang cho thuê)</option>
+                  <option value="unavailable">Unavailable (tạm ngừng)</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="admin-form-actions" style={{ marginTop: 0, padding: "16px 24px", borderTop: "1px solid #f1f5f9" }}>
+          <button
+            type="button"
+            disabled={step === 1}
+            onClick={() => setStep((s) => s - 1)}
+            className="admin-btn-ghost"
+            style={{ opacity: step === 1 ? 0.5 : 1, cursor: step === 1 ? "not-allowed" : "pointer" }}
+          >
+            Quay lại
           </button>
-        ) : (
-          <button onClick={() => void handleSubmit()} disabled={saving} style={{ backgroundColor: THEME_COLOR }} className="px-10 py-3 text-slate-900 rounded-xl font-bold hover:brightness-95 shadow-lg disabled:opacity-70">
-            {saving ? "Đang lưu..." : "Lưu thay đổi"}
-          </button>
-        )}
+          {step < 4 ? (
+            <button type="button" onClick={() => setStep((s) => s + 1)} className="admin-form-submit">
+              Bước tiếp theo
+            </button>
+          ) : (
+            <button type="button" onClick={() => void handleSubmit()} disabled={saving || uploadingCount > 0} className="admin-form-submit" style={{ opacity: (saving || uploadingCount > 0) ? 0.6 : 1 }}>
+              {uploadingCount > 0 ? `Đang tải ảnh (${uploadingCount})...` : saving ? "Đang lưu..." : "Lưu thay đổi"}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

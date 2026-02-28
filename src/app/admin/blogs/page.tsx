@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Plus, Search, Edit3, Trash2, Tag } from "lucide-react";
+import Swal from "sweetalert2";
 
 const THEME_COLOR = "#F5D060";
 
@@ -18,6 +19,7 @@ interface BlogPostRow {
   author: string;
   category: string;
   content: string;
+  status?: string;
 }
 
 export default function AdminBlogsPage() {
@@ -29,6 +31,7 @@ export default function AdminBlogsPage() {
     const params = new URLSearchParams();
     if (search.trim()) params.set("search", search.trim());
     setLoading(true);
+    // Admin list: no page/limit so API returns all posts (including hidden)
     fetch(`/api/blogs?${params}`)
       .then((r) => r.json())
       .then((data) => setPosts(Array.isArray(data) ? data : []))
@@ -38,10 +41,38 @@ export default function AdminBlogsPage() {
 
   const filtered = posts;
 
-  const handleDelete = async (id: number) => {
-    if (typeof window === "undefined" || !window.confirm("Bạn có chắc muốn xóa bài viết này?")) return;
-    const res = await fetch(`/api/blogs/${id}`, { method: "DELETE" });
-    if (res.ok) setPosts((prev) => prev.filter((p) => p.id !== id));
+  const handleDeleteClick = (post: BlogPostRow) => {
+    Swal.fire({
+      title: "Xóa bài viết",
+      text: `Bạn có chắc muốn xóa "${post.title}"? Hành động này không thể hoàn tác.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+      showLoaderOnConfirm: true,
+      preConfirm: async () => {
+        try {
+          const res = await fetch(`/api/blogs/${post.id}`, { method: "DELETE" });
+          if (!res.ok) throw new Error("Failed to delete");
+          return true;
+        } catch (error) {
+          Swal.showValidationMessage(`Không thể xóa: ${error}`);
+        }
+      },
+      allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setPosts((prev) => prev.filter((p) => p.id !== post.id));
+        Swal.fire({
+          title: "Đã xóa!",
+          text: "Bài viết đã được xóa thành công.",
+          icon: "success",
+          confirmButtonColor: "#10b981"
+        });
+      }
+    });
   };
 
   return (
@@ -56,9 +87,9 @@ export default function AdminBlogsPage() {
             Tin tức & bài viết hiển thị trên website
           </p>
         </div>
-        <button className="admin-btn-gold">
+        <Link href="/admin/blogs/new" className="admin-btn-gold" style={{ display: "inline-flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
           <Plus size={18} /> Thêm bài viết
-        </button>
+        </Link>
       </div>
 
       {/* Search */}
@@ -82,6 +113,7 @@ export default function AdminBlogsPage() {
               <th>Bài viết</th>
               <th>Tác giả</th>
               <th>Ngày đăng</th>
+              <th>Trạng thái</th>
               <th style={{ textAlign: "right" }}>Hành động</th>
             </tr>
           </thead>
@@ -124,6 +156,17 @@ export default function AdminBlogsPage() {
                   </div>
                 </td>
                 <td style={{ fontSize: "13px", color: "#64748b" }}>{formatDate(post.date)}</td>
+                <td>
+                  <span style={{
+                    display: "inline-flex", alignItems: "center", gap: "4px",
+                    fontSize: "12px", fontWeight: 600,
+                    color: post.status === "hidden" ? "#94a3b8" : "#16a34a",
+                    background: post.status === "hidden" ? "rgba(148,163,184,0.15)" : "rgba(22,163,74,0.1)",
+                    padding: "4px 10px", borderRadius: "20px",
+                  }}>
+                    {post.status === "hidden" ? "Ẩn" : "Hiện"}
+                  </span>
+                </td>
                 <td style={{ textAlign: "right" }}>
                   <div style={{ display: "flex", justifyContent: "flex-end", gap: "4px" }}>
                     <Link
@@ -139,7 +182,7 @@ export default function AdminBlogsPage() {
                       <Edit3 size={15} />
                     </Link>
                     <button
-                      onClick={() => handleDelete(post.id)}
+                      onClick={() => handleDeleteClick(post)}
                       style={{
                         display: "flex", alignItems: "center", justifyContent: "center",
                         width: "34px", height: "34px", borderRadius: "8px",
@@ -167,6 +210,7 @@ export default function AdminBlogsPage() {
           </div>
         )}
       </div>
+
     </div>
   );
 }

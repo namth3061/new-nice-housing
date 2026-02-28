@@ -6,16 +6,28 @@ import { Footer } from '../components/Layout/Footer';
 import { HomeView } from '../views/HomeView/HomeView';
 import { ListView } from '../views/ListView/ListView';
 import { DetailsView } from '../views/DetailsView/DetailsView';
-import { CheckoutView } from '../views/CheckoutView/CheckoutView';
+import { CheckoutView, type BookingFormData } from '../views/CheckoutView/CheckoutView';
 import { Hotel } from '../types/hotel';
 import { propertyToHotel } from '../lib/propertyToHotel';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function App() {
+  const { t } = useLanguage();
   const [view, setView] = useState('home');
   const [activeHotel, setActiveHotel] = useState<Hotel | null>(null);
   const [toastMsg, setToastMsg] = useState<React.ReactNode | null>(null);
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [hotelsLoading, setHotelsLoading] = useState(true);
+
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      home: "Nine Housing - Đặt phòng & Thuê nhà dễ dàng",
+      list: "Danh sách chỗ ở | Nine Housing",
+      details: activeHotel ? `${activeHotel.name} | Nine Housing` : "Chi tiết chỗ ở | Nine Housing",
+      checkout: "Đặt phòng | Nine Housing",
+    };
+    document.title = titles[view] || "Nine Housing";
+  }, [view, activeHotel]);
 
   useEffect(() => {
     fetch("/api/properties")
@@ -38,11 +50,11 @@ export default function App() {
   const goDetails = (hotel: Hotel) => { setActiveHotel(hotel); setView('details'); };
   const goCheckout = (hotel: Hotel) => { setActiveHotel(hotel); setView('checkout'); };
 
-  const handleConfirm = () => {
+  const handleConfirm = async (_data: BookingFormData) => {
     showToast(
       <span>
-        <i className="fa-solid fa-champagne-glasses"></i> CHÚC MỪNG BẠN ĐÃ ĐẶT PHÒNG THÀNH CÔNG!<br /><br />
-        Mã xác nhận đã được gửi qua Email.<br />NiceHousing cảm ơn bạn!
+        <i className="fa-solid fa-champagne-glasses"></i> {t('checkout.success_title')}<br /><br />
+        {t('checkout.success_sent')}<br />{t('checkout.success_thanks')}
       </span>
     );
     setTimeout(() => goHome(), 3000);

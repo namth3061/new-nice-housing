@@ -8,12 +8,12 @@ export const POLICY_SECTIONS: PolicySection[] = [
   {
     id: "intro",
     title: "Giới thiệu",
-    content: `Chính sách này mô tả cách NiceHousing thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn khi sử dụng nền tảng đặt phòng khách sạn. Chúng tôi cam kết bảo mật thông tin và minh bạch trong mọi hoạt động xử lý dữ liệu.`,
+    content: `Chính sách này mô tả cách NineHousing thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn khi sử dụng nền tảng đặt phòng khách sạn. Chúng tôi cam kết bảo mật thông tin và minh bạch trong mọi hoạt động xử lý dữ liệu.`,
   },
   {
     id: "collect",
     title: "Thông tin chúng tôi thu thập",
-    content: `Chúng tôi có thể thu thập: (1) Thông tin bạn cung cấp: họ tên, email, số điện thoại, địa chỉ khi đặt phòng hoặc đăng ký tài khoản. (2) Thông tin thanh toán: thẻ tín dụng/ghi nợ được xử lý qua cổng thanh toán bảo mật, NiceHousing không lưu trữ số thẻ đầy đủ. (3) Thông tin tự động: địa chỉ IP, loại thiết bị, trình duyệt khi bạn truy cập website để cải thiện trải nghiệm và bảo mật.`,
+    content: `Chúng tôi có thể thu thập: (1) Thông tin bạn cung cấp: họ tên, email, số điện thoại, địa chỉ khi đặt phòng hoặc đăng ký tài khoản. (2) Thông tin thanh toán: thẻ tín dụng/ghi nợ được xử lý qua cổng thanh toán bảo mật, NineHousing không lưu trữ số thẻ đầy đủ. (3) Thông tin tự động: địa chỉ IP, loại thiết bị, trình duyệt khi bạn truy cập website để cải thiện trải nghiệm và bảo mật.`,
   },
   {
     id: "use",
@@ -28,7 +28,7 @@ export const POLICY_SECTIONS: PolicySection[] = [
   {
     id: "security",
     title: "Bảo mật",
-    content: `NiceHousing áp dụng các biện pháp kỹ thuật và tổ chức phù hợp để bảo vệ dữ liệu: mã hóa kết nối (SSL/TLS), hạn chế quyền truy cập nội bộ, và cập nhật thường xuyên. Trong trường hợp sự cố rò rỉ dữ liệu có thể ảnh hưởng đến bạn, chúng tôi sẽ thông báo trong thời gian sớm nhất theo quy định.`,
+    content: `NineHousing áp dụng các biện pháp kỹ thuật và tổ chức phù hợp để bảo vệ dữ liệu: mã hóa kết nối (SSL/TLS), hạn chế quyền truy cập nội bộ, và cập nhật thường xuyên. Trong trường hợp sự cố rò rỉ dữ liệu có thể ảnh hưởng đến bạn, chúng tôi sẽ thông báo trong thời gian sớm nhất theo quy định.`,
   },
   {
     id: "rights",

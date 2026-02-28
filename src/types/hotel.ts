@@ -4,9 +4,12 @@ export interface AmenityDetail {
 }
 
 export interface HotelSpecs {
-    beds: string;
-    guests: string;
-    size: string;
+    bedrooms?: string | number;
+    bathrooms?: string | number;
+    area?: string | number;
+    beds?: string | number;
+    guests?: string | number;
+    size?: string | number;
 }
 
 export interface Hotel {
@@ -14,6 +17,7 @@ export interface Hotel {
     slug: string;
     name: string;
     price: string;
+    priceType?: string;
     rawPrice: number;
     stars: number;
     rating: number;

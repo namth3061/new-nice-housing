@@ -10,6 +10,7 @@ export interface BlogPostRow {
   author: string;
   category: string;
   content: string;
+  status: string;
   created_at: Date;
   updated_at: Date;
 }
@@ -23,6 +24,7 @@ export interface BlogPostCreate {
   author?: string;
   category?: string;
   content?: string;
+  status?: "visible" | "hidden";
 }
 
 export interface BlogPostUpdate extends Partial<BlogPostCreate> {}
@@ -38,17 +40,23 @@ function toCamel(r: BlogPostRow) {
     author: r.author,
     category: r.category,
     content: r.content,
+    status: r.status,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   };
 }
 
-export async function findAllBlogPosts(filters?: { search?: string }) {
+export async function findAllBlogPosts(filters?: { search?: string; onlyVisible?: boolean }) {
   let sql = `SELECT * FROM blog_posts WHERE 1=1`;
   const params: unknown[] = [];
+  let paramIndex = 1;
   if (filters?.search) {
-    sql += ` AND (title ILIKE $1 OR category ILIKE $1 OR author ILIKE $1)`;
+    sql += ` AND (title ILIKE $${paramIndex} OR category ILIKE $${paramIndex} OR author ILIKE $${paramIndex})`;
     params.push(`%${filters.search}%`);
+    paramIndex += 1;
+  }
+  if (filters?.onlyVisible) {
+    sql += ` AND status = 'visible'`;
   }
   sql += ` ORDER BY date DESC, id DESC`;
   const { rows } = await query<BlogPostRow>(sql, params);
@@ -59,15 +67,21 @@ export async function findBlogPostsPaginated(options: {
   search?: string;
   page?: number;
   limit?: number;
+  onlyVisible?: boolean;
 }) {
   const page = Math.max(1, options.page ?? 1);
   const limit = Math.min(50, Math.max(1, options.limit ?? 9));
   const offset = (page - 1) * limit;
   let where = `WHERE 1=1`;
   const params: unknown[] = [];
+  let paramIndex = 1;
   if (options.search) {
-    where += ` AND (title ILIKE $1 OR category ILIKE $1 OR author ILIKE $1)`;
+    where += ` AND (title ILIKE $${paramIndex} OR category ILIKE $${paramIndex} OR author ILIKE $${paramIndex})`;
     params.push(`%${options.search}%`);
+    paramIndex += 1;
+  }
+  if (options.onlyVisible) {
+    where += ` AND status = 'visible'`;
   }
   const countResult = await query<{ count: string }>(
     `SELECT COUNT(*)::int AS count FROM blog_posts ${where}`,
@@ -85,15 +99,18 @@ export async function findBlogPostById(id: number) {
   return rows[0] ? toCamel(rows[0]) : null;
 }
 
-export async function findBlogPostBySlug(slug: string) {
-  const { rows } = await query<BlogPostRow>("SELECT * FROM blog_posts WHERE slug = $1", [slug]);
+export async function findBlogPostBySlug(slug: string, options?: { onlyVisible?: boolean }) {
+  let sql = "SELECT * FROM blog_posts WHERE slug = $1";
+  if (options?.onlyVisible) sql += " AND status = 'visible'";
+  const { rows } = await query<BlogPostRow>(sql, [slug]);
   return rows[0] ? toCamel(rows[0]) : null;
 }
 
 export async function createBlogPost(data: BlogPostCreate) {
+  const status = data.status === "hidden" ? "hidden" : "visible";
   const { rows } = await query<BlogPostRow>(
-    `INSERT INTO blog_posts (slug, title, excerpt, date, image, author, category, content)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `INSERT INTO blog_posts (slug, title, excerpt, date, image, author, category, content, status)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      RETURNING *`,
     [
       data.slug,
@@ -104,6 +121,7 @@ export async function createBlogPost(data: BlogPostCreate) {
       data.author ?? "",
       data.category ?? "",
       data.content ?? "",
+      status,
     ]
   );
   return rows[0] ? toCamel(rows[0]) : null;
@@ -121,11 +139,13 @@ export async function updateBlogPost(id: number, data: BlogPostUpdate) {
     author: data.author ?? existing.author,
     category: data.category ?? existing.category,
     content: data.content ?? existing.content,
+    status: data.status ?? existing.status,
   };
+  const status = payload.status === "hidden" ? "hidden" : "visible";
   const { rows } = await query<BlogPostRow>(
-    `UPDATE blog_posts SET slug=$2, title=$3, excerpt=$4, date=$5, image=$6, author=$7, category=$8, content=$9, updated_at=NOW()
+    `UPDATE blog_posts SET slug=$2, title=$3, excerpt=$4, date=$5, image=$6, author=$7, category=$8, content=$9, status=$10, updated_at=NOW()
      WHERE id = $1 RETURNING *`,
-    [id, payload.slug, payload.title, payload.excerpt, payload.date, payload.image, payload.author, payload.category, payload.content]
+    [id, payload.slug, payload.title, payload.excerpt, payload.date, payload.image, payload.author, payload.category, payload.content, status]
   );
   return rows[0] ? toCamel(rows[0]) : null;
 }

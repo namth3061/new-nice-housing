@@ -1,5 +1,5 @@
 {
-  "name": "nicehousing",
+  "name": "NineHousing",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -21,7 +21,8 @@
     "pg": "^8.19.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "recharts": "^3.7.0"
+    "recharts": "^3.7.0",
+    "sweetalert2": "^11.26.20"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

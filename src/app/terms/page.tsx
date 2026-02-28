@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { Navbar } from "../../components/Layout/Navbar";
 import { Footer } from "../../components/Layout/Footer";
 import { TERMS_SECTIONS } from "../../data/terms";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function TermsPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [toastMsg, setToastMsg] = useState<React.ReactNode | null>(null);
   const showToast = (msg: React.ReactNode) => {
     setToastMsg(msg);
@@ -21,8 +23,8 @@ export default function TermsPage() {
       <main className="list-page page-transition" style={{ minHeight: "80vh" }}>
         <div className="section-header" style={{ marginBottom: "40px" }}>
           <div>
-            <div className="section-eyebrow"><i className="fa-solid fa-file-lines"></i> Pháp lý</div>
-            <h1 className="section-title">Điều khoản sử dụng</h1>
+            <div className="section-eyebrow"><i className="fa-solid fa-file-lines"></i> {t("terms.eyebrow")}</div>
+            <h1 className="section-title">{t("terms.title")}</h1>
           </div>
         </div>
 
@@ -39,7 +41,7 @@ export default function TermsPage() {
           ))}
         </div>
       </main>
-      <Footer goList={() => router.push("/hotel")} showToast={showToast} />
+      <Footer goList={() => router.push("/apartment")} showToast={showToast} />
     </>
   );
 }

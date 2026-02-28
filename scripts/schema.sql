@@ -1,6 +1,6 @@
--- Nice Housing - PostgreSQL schema
--- Run: psql -U root -d nice_housing -f scripts/schema.sql
--- Or create DB first: CREATE DATABASE nice_housing;
+-- nine Housing - PostgreSQL schema
+-- Run: psql -U root -d nine_housing -f scripts/schema.sql
+-- Or create DB first: CREATE DATABASE nine_housing;
 
 -- Users (admin UI: name, email, phone, role, joinedAt, bookingsCount, status)
 CREATE TABLE IF NOT EXISTS users (
@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS properties (
   id SERIAL PRIMARY KEY,
   slug VARCHAR(255) UNIQUE NOT NULL,
   name VARCHAR(255) NOT NULL,
+  category VARCHAR(255) DEFAULT '',
   location VARCHAR(255) DEFAULT '',
   province VARCHAR(100) DEFAULT '',
   district VARCHAR(100) DEFAULT '',
@@ -37,6 +38,8 @@ CREATE TABLE IF NOT EXISTS properties (
   specs JSONB DEFAULT '{}',
   detailed_amenities JSONB DEFAULT '[]',
   max_guests INTEGER DEFAULT 2,
+  price_type VARCHAR(20) DEFAULT 'month',
+  status VARCHAR(20) NOT NULL DEFAULT 'available' CHECK (status IN ('available', 'unavailable')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

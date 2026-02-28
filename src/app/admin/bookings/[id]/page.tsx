@@ -20,8 +20,8 @@ import {
 
 const THEME_COLOR = "#F5D060";
 
-const formatVND = (amount: number) =>
-  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
+const formatUSD = (amount: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
 
 type BookingStatus = "Pending" | "Confirmed" | "Cancelled" | "Completed";
 
@@ -229,7 +229,7 @@ export default function BookingDetailPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: "13px", color: "#64748b" }}>Giá / đêm</span>
-                <span style={{ fontWeight: 700, color: "#0f172a", fontSize: "14px" }}>{formatVND(perNight)}</span>
+                <span style={{ fontWeight: 700, color: "#0f172a", fontSize: "14px" }}>{formatUSD(perNight)}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: "13px", color: "#64748b" }}>Số đêm</span>
@@ -239,7 +239,7 @@ export default function BookingDetailPage() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: "14px", fontWeight: 700, color: "#0f172a" }}>Tổng cộng</span>
                 <span style={{ fontSize: "20px", fontWeight: 800, color: "#0f172a" }}>
-                  {formatVND(booking.total)}
+                  {formatUSD(booking.total)}
                 </span>
               </div>
             </div>

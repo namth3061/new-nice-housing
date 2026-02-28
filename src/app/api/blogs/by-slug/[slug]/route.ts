@@ -8,7 +8,7 @@ export async function GET(
   try {
     const slug = (await params).slug;
     if (!slug) return NextResponse.json({ error: "Invalid slug" }, { status: 400 });
-    const row = await BlogPost.findBlogPostBySlug(slug);
+    const row = await BlogPost.findBlogPostBySlug(slug, { onlyVisible: true });
     if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(row);
   } catch (e) {

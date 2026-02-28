@@ -34,6 +34,7 @@ export async function PUT(
       author: body.author,
       category: body.category,
       content: body.content,
+      status: body.status === "hidden" ? "hidden" : "visible",
     });
     if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(updated);

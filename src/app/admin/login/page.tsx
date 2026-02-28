@@ -79,7 +79,7 @@ export default function AdminLoginPage() {
             Cổng Quản Trị
           </h1>
           <p style={{ fontSize: "14px", color: "#64748b", marginTop: "6px" }}>
-            NiceHousing Admin
+            NineHousing Admin
           </p>
         </div>
 
@@ -93,7 +93,7 @@ export default function AdminLoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
-            placeholder="admin@nicehousing.vn"
+            placeholder="admin@ninehousing.com"
             style={{
               width: "100%",
               padding: "12px 14px",

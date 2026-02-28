@@ -11,14 +11,17 @@ export async function GET(request: Request) {
     const limit = limitParam ? Math.min(50, Math.max(1, parseInt(limitParam, 10) || 9)) : undefined;
 
     if (page !== undefined || limit !== undefined) {
+      // Public paginated list: only visible posts
       const result = await BlogPost.findBlogPostsPaginated({
         search,
         page: page ?? 1,
         limit: limit ?? 9,
+        onlyVisible: true,
       });
       return NextResponse.json(result);
     }
 
+    // Admin list (no page/limit): all posts including hidden
     const list = await BlogPost.findAllBlogPosts({ search });
     return NextResponse.json(list);
   } catch (e) {
@@ -40,6 +43,7 @@ export async function POST(request: Request) {
       author: body.author,
       category: body.category,
       content: body.content,
+      status: body.status === "hidden" ? "hidden" : "visible",
     });
     if (!created) return NextResponse.json({ error: "Create failed" }, { status: 400 });
     return NextResponse.json(created);

@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const row = user as Record<string, unknown>;
+    const row = user as unknown as Record<string, unknown>;
     const hashKey = Object.keys(row).find((k) => k.toLowerCase() === "password_hash");
     const passwordHash = (hashKey ? row[hashKey] : user.password_hash ?? row?.password_hash ?? "") as string;
     if (!passwordHash || typeof passwordHash !== "string") {

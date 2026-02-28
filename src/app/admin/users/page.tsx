@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Search, Mail, UserPlus, MoreVertical } from "lucide-react";
+import Link from "next/link";
+import { Search, Mail, UserPlus, MoreVertical, Pencil } from "lucide-react";
 
 const THEME_COLOR = "#F5D060";
 
@@ -55,7 +56,7 @@ export default function UsersPage() {
       .then((r) => r.json())
       .then((data) => {
         const list = Array.isArray(data) ? data : [];
-        setUsers(list.map((u: { joinedAt?: string | Date; bookingsCount?: number }) => ({
+        setUsers(list.map((u: any) => ({
           ...u,
           joinedAt: formatJoinedAt(u.joinedAt ?? ""),
           bookingsCount: u.bookingsCount ?? 0,
@@ -79,9 +80,9 @@ export default function UsersPage() {
             Danh sách tài khoản trên hệ thống
           </p>
         </div>
-        <button className="admin-btn-gold">
+        <Link href="/admin/users/new" className="admin-btn-gold" style={{ display: "inline-flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
           <UserPlus size={18} /> Thêm người dùng
-        </button>
+        </Link>
       </div>
 
       {/* Filters */}
@@ -166,19 +167,24 @@ export default function UsersPage() {
                   </span>
                 </td>
                 <td>
-                  <button
+                  <Link
+                    href={`/admin/users/${u.id}/edit`}
+                    className="admin-form-back"
                     style={{
-                      background: "none", border: "none", cursor: "pointer",
-                      padding: "6px", borderRadius: "8px",
-                      color: "#94a3b8", display: "flex", alignItems: "center",
-                      transition: "background 0.15s, color 0.15s",
+                      padding: "6px 10px",
+                      borderRadius: "8px",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      color: "var(--a-gold)",
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "#f1f5f9"; e.currentTarget.style.color = "#475569"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#94a3b8"; }}
-                    title="Hành động"
+                    title="Chỉnh sửa"
                   >
-                    <MoreVertical size={18} />
-                  </button>
+                    <Pencil size={16} />
+                    Sửa
+                  </Link>
                 </td>
               </tr>
             ))}

@@ -4,7 +4,7 @@
  *
  * Login uses accounts from the users table only (role=admin, password_hash set).
  * This script creates/updates one admin in that table. No env required for account:
- * - Default: admin@nicehousing.vn / Admin123! (change after first login).
+ * - Default: admin@ninehousing.com / Admin123! (change after first login).
  * - Optional override: set ADMIN_EMAIL, ADMIN_PASSWORD in .env.local or .env.
  *
  * Requires: DATABASE_URL only.
@@ -17,7 +17,7 @@ const bcrypt = require("bcrypt");
 
 const PROJECT_ROOT = path.resolve(__dirname, "..");
 
-const DEFAULT_ADMIN_EMAIL = "admin@nicehousing.vn";
+const DEFAULT_ADMIN_EMAIL = "admin@ninehousing.com";
 const DEFAULT_ADMIN_PASSWORD = "Admin123!";
 
 function loadEnvFile(filename) {

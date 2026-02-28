@@ -30,7 +30,7 @@ body {
 }
 
 body {
-  font-family: 'Be Vietnam Pro', sans-serif;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background: var(--white);
   color: var(--black);
 }
@@ -419,6 +419,31 @@ nav {
   border-color: var(--gold);
 }
 
+/* Hero province select: nền sáng, chữ tối để dễ đọc trên hero */
+.hero-province-select {
+  width: 100%;
+  background: #fff;
+  border: 1px solid rgba(212, 160, 23, 0.35);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: #1a1a2e;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+  appearance: auto;
+}
+
+.hero-province-select:focus {
+  border-color: var(--gold);
+}
+
+.hero-province-select option {
+  background: #fff;
+  color: #1a1a2e;
+}
+
 .btn-search {
   background: var(--gold-gradient);
   border: none;
@@ -750,6 +775,107 @@ section {
   gap: 28px;
 }
 
+/* ===== BLOG SLIDER ===== */
+:root {
+  --blog-gap: 24px;
+  --blog-visible: 4;
+}
+
+.blog-slider-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.blog-slider-viewport {
+  overflow: hidden;
+  width: 100%;
+}
+
+.blog-slider-track {
+  display: flex;
+  gap: var(--blog-gap);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.blog-slide-card {
+  flex: 0 0 calc((100% - (var(--blog-visible) - 1) * var(--blog-gap)) / var(--blog-visible));
+  min-width: 0;
+}
+
+/* Prev / Next buttons */
+.blog-slider-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: var(--white);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  color: var(--gold-dark);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.blog-slider-btn:hover {
+  background: var(--gold-gradient);
+  color: var(--black);
+  box-shadow: 0 6px 28px rgba(212, 160, 23, 0.35);
+}
+
+.blog-slider-btn--prev {
+  left: -22px;
+}
+
+.blog-slider-btn--next {
+  right: -22px;
+}
+
+/* Dots */
+.blog-slider-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 28px;
+}
+
+.blog-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: var(--border);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.3s, width 0.3s;
+}
+
+.blog-dot.active {
+  background: var(--gold);
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* Home featured apartments: 5 items in one row, no wrap when zoom; mobile shows all 5 */
+.home-featured-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 28px;
+  overflow-x: auto;
+  width: 100%;
+}
+
+.home-featured-row>* {
+  min-width: 0;
+}
+
 .hotel-card {
   border-radius: 18px;
   overflow: hidden;
@@ -981,6 +1107,7 @@ section {
   .list-layout--blog .filter-sidebar {
     order: 1;
   }
+
   .list-layout--blog article {
     order: 2;
   }
@@ -1009,6 +1136,13 @@ section {
   font-family: 'Playfair Display', serif;
   font-size: 20px;
   color: var(--black);
+}
+
+.filter-toggle-icon {
+  display: none;
+  font-size: 14px;
+  color: var(--gold-dark);
+  transition: transform 0.25s ease;
 }
 
 .clear-filter {
@@ -1121,6 +1255,8 @@ section {
 .pagination-bottom {
   position: relative;
   order: 9999;
+  background-color: var(--white);
+  border-radius: 12px;
 }
 
 /* Details specific */
@@ -1607,6 +1743,29 @@ footer {
     margin-bottom: 32px;
   }
 
+  .filter-header {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .filter-toggle-icon {
+    display: block;
+  }
+
+  .filter-sidebar.is-open .filter-toggle-icon {
+    transform: rotate(180deg);
+  }
+
+  .filter-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .filter-sidebar.is-open .filter-body {
+    max-height: 800px;
+  }
+
   .checkout-summary {
     position: static;
     margin-top: 32px;
@@ -1621,7 +1780,11 @@ footer {
   }
 
   .footer-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+  }
+
+  footer {
+    padding: 40px 20px;
   }
 
   .deal-banner {
@@ -1668,11 +1831,197 @@ footer {
     grid-template-columns: 1fr;
   }
 
-  .home-destinations {
-    grid-template-columns: 1fr;
+  .blog-slide-card {
+    flex: 0 0 calc(100% - 2 * var(--blog-gap));
   }
 
-  .home-stats {
+  .blog-slider-btn--prev {
+    left: -12px;
+  }
+
+  .blog-slider-btn--next {
+    right: -12px;
+  }
+
+  .home-featured-row {
     grid-template-columns: 1fr;
+    overflow-x: visible;
+  }
+
+  .dest-slider-viewport {
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .home-destinations {
+    display: flex;
+    flex-wrap: nowrap;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+    /* remove grid gap since we're using flex gap from desktop implicitly, but just to be sure: */
+    gap: 20px;
+  }
+
+  .home-dest-card {
+    flex: 0 0 100%;
+    min-width: 0;
+  }
+
+  .stats-slider-viewport {
+    overflow: hidden;
+    width: 100%;
+    background: var(--gold-pale);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .features-slider-viewport {
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .home-stats,
+  .home-why-us {
+    display: flex;
+    flex-wrap: nowrap;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+    margin: 0;
+  }
+
+  /* Keep their respective gaps but force items to 100% width */
+  .home-stats {
+    gap: 0;
+    padding: 0;
+    /* Clear desktop padding */
+    background: transparent;
+    border: none;
+  }
+
+  .home-stat-item {
+    flex: 0 0 100%;
+    min-width: 0;
+    padding: 32px 20px;
+    text-align: center;
+  }
+
+  .home-why-us {
+    gap: 28px;
+    padding: 24px 0;
+    margin-bottom: 24px;
+    background: transparent;
+  }
+
+  .home-why-item {
+    flex: 0 0 100%;
+    min-width: 0;
+    background: var(--charcoal);
+    padding: 32px 24px;
+    border-radius: 24px;
+  }
+}
+
+/* ===== PHOTO GALLERY ===== */
+.home-photo-gallery {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 10px;
+  height: auto;
+  overflow: visible;
+}
+
+.gallery-featured,
+.gallery-thumb {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  cursor: pointer;
+  background: var(--gold-pale);
+}
+
+.gallery-featured {
+  border-radius: 16px;
+  aspect-ratio: 4/3;
+  width: 100%;
+}
+
+.gallery-featured img,
+.gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+  display: block;
+}
+
+.gallery-featured:hover img,
+.gallery-thumb:hover img {
+  transform: scale(1.07);
+}
+
+.gallery-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(13, 11, 7, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.gallery-overlay i {
+  font-size: 28px;
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.gallery-featured:hover .gallery-overlay,
+.gallery-thumb:hover .gallery-overlay {
+  background: rgba(13, 11, 7, 0.35);
+}
+
+.gallery-featured:hover .gallery-overlay i,
+.gallery-thumb:hover .gallery-overlay i {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 10px;
+  aspect-ratio: 3/2;
+  width: 100%;
+  min-height: 0;
+}
+
+@media (max-width: 900px) {
+  .home-photo-gallery {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .gallery-featured {
+    height: 300px;
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(3, 1fr);
+    height: 300px;
+  }
+}
+
+@media (max-width: 600px) {
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+    height: auto;
+    aspect-ratio: auto;
+  }
+
+  .gallery-thumb {
+    height: 130px;
   }
 }

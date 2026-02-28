@@ -29,6 +29,9 @@ function ratingLabel(rating: number): string {
 
 function toHotelSpecs(specs: Record<string, string>): HotelSpecs {
   return {
+    bedrooms: specs?.bedrooms ?? 0,
+    bathrooms: specs?.bathrooms ?? 0,
+    area: specs?.area ?? 0,
     beds: specs?.beds ?? "—",
     guests: specs?.guests ?? "—",
     size: specs?.size ?? "—",

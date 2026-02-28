@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "../../../components/Layout/Navbar";
 import { Footer } from "../../../components/Layout/Footer";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface BlogPost {
   id: number;
@@ -38,6 +39,7 @@ function formatContent(text: string) {
 export default function BlogPostPage() {
   const params = useParams();
   const router = useRouter();
+  const { t, language } = useLanguage();
   const slug = useMemo(() => (params?.slug ? String(params.slug) : null), [params?.slug]);
   const [toastMsg, setToastMsg] = useState<React.ReactNode | null>(null);
   const [post, setPost] = useState<BlogPost | null>(null);
@@ -68,8 +70,8 @@ export default function BlogPostPage() {
   }, [post, allPosts]);
 
   useEffect(() => {
-    if (post) document.title = `${post.title} | NiceHousing`;
-    return () => { document.title = "NiceHousing"; };
+    if (post) document.title = `${post.title} | Nine Housing`;
+    return () => { document.title = "Nine Housing"; };
   }, [post]);
 
   const showToast = (msg: React.ReactNode) => {
@@ -79,7 +81,7 @@ export default function BlogPostPage() {
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
-    return d.toLocaleDateString("vi-VN", { day: "numeric", month: "long", year: "numeric" });
+    return d.toLocaleDateString(language === "vi" ? "vi-VN" : "en-US", { day: "numeric", month: "long", year: "numeric" });
   };
 
   if (slug == null) return null;
@@ -88,7 +90,7 @@ export default function BlogPostPage() {
       <>
         <Navbar showToast={showToast} />
         <main className="list-page" style={{ minHeight: "80vh", paddingTop: "100px", textAlign: "center" }}>
-          <p style={{ color: "var(--mid)" }}>Đang tải...</p>
+          <p style={{ color: "var(--mid)" }}>{t("blogs.loading")}</p>
         </main>
         <Footer goList={() => router.push("/hotel")} showToast={showToast} />
       </>
@@ -99,9 +101,9 @@ export default function BlogPostPage() {
       <>
         <Navbar showToast={showToast} />
         <main className="list-page" style={{ minHeight: "80vh", paddingTop: "100px", textAlign: "center" }}>
-          <p>Không tìm thấy bài viết.</p>
+          <p>{t("blogs.post_not_found")}</p>
           <Link href="/blogs" className="btn-gold" style={{ display: "inline-block", width: "auto", marginTop: 16 }}>
-            Quay lại Blogs
+            {t("blogs.back_to_blogs")}
           </Link>
         </main>
         <Footer goList={() => router.push("/hotel")} showToast={showToast} />
@@ -115,9 +117,9 @@ export default function BlogPostPage() {
       <Navbar showToast={showToast} />
       <main className="list-page page-transition" style={{ minHeight: "80vh" }}>
         <div className="breadcrumb">
-          <Link href="/">Trang chủ</Link>
+          <Link href="/">{t("common.home")}</Link>
           <i className="fa-solid fa-chevron-right" style={{ fontSize: "10px" }} aria-hidden />
-          <Link href="/blogs">Blogs</Link>
+          <Link href="/blogs">{t("common.blogs")}</Link>
           <i className="fa-solid fa-chevron-right" style={{ fontSize: "10px" }} aria-hidden />
           <strong style={{ color: "var(--black)" }}>{post.title}</strong>
         </div>
@@ -138,7 +140,7 @@ export default function BlogPostPage() {
 
           <aside className="filter-sidebar" style={{ position: "sticky", top: "100px" }}>
             <div className="filter-header" style={{ borderBottom: "none", paddingBottom: 0, marginBottom: "16px" }}>
-              <h3 style={{ fontFamily: "Playfair Display", fontSize: "18px", color: "var(--black)" }}>Bài viết liên quan</h3>
+              <h3 style={{ fontFamily: "Playfair Display", fontSize: "18px", color: "var(--black)" }}>{t("blogs.related_posts")}</h3>
             </div>
             <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
               {relatedPosts.map((related) => (
@@ -164,7 +166,7 @@ export default function BlogPostPage() {
           </aside>
         </div>
       </main>
-      <Footer goList={() => router.push("/hotel")} showToast={showToast} />
+      <Footer goList={() => router.push("/apartment")} showToast={showToast} />
     </>
   );
 }

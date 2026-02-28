@@ -43,6 +43,12 @@ const menuGroups = [
       { id: "terms", label: "Điều khoản", href: "/admin/content?type=terms", icon: FileText },
     ],
   },
+  {
+    label: "Hệ thống",
+    items: [
+      { id: "settings", label: "Cài đặt", href: "/admin/settings", icon: Briefcase },
+    ],
+  },
 ];
 
 function Sidebar() {
@@ -63,9 +69,8 @@ function Sidebar() {
   return (
     <aside className="admin-sidebar">
       {/* Logo */}
-      <div className="admin-sidebar-logo">
-        <Briefcase size={24} />
-        <span>Nice<span>Housing</span></span>
+      <div className="admin-sidebar-logo" style={{ padding: '24px 20px', display: 'flex', justifyContent: 'center' }}>
+        <img src="/logo.png" alt="Nine Housing" style={{ height: '48px', width: 'auto' }} />
       </div>
 
       {/* Navigation */}
@@ -101,7 +106,7 @@ function Sidebar() {
         <div className="admin-user-avatar">A</div>
         <div className="flex-1 min-w-0">
           <p className="admin-user-name truncate">Quản trị viên</p>
-          <p className="admin-user-sub truncate">NiceHousing Admin</p>
+          <p className="admin-user-sub truncate">NineHousing Admin</p>
         </div>
       </div>
     </aside>
@@ -130,6 +135,10 @@ export default function AdminLayout({
     content: "Nội dung",
   };
   const title = titleMap[segment] ?? "Hệ thống";
+
+  React.useEffect(() => {
+    document.title = `${title} - Quản trị Nine Housing`;
+  }, [title]);
 
   return (
     <div className="admin-root min-h-screen" style={{ background: "#f8fafc" }}>

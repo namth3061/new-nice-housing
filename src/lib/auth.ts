@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET ?? "nicehousing-jwt-secret-change-in-production";
+const JWT_SECRET = process.env.JWT_SECRET ?? "Ninehousing-jwt-secret-change-in-production";
 export const JWT_EXPIRY = "90d"; // 3 months
 export const ADMIN_COOKIE_NAME = "admin_token";
 
@@ -21,7 +21,7 @@ export function signAdminToken(payload: { sub: number; email: string }): string 
 
 export function verifyAdminToken(token: string): JwtPayload | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+    const decoded = jwt.verify(token, JWT_SECRET) as unknown as JwtPayload;
     return decoded;
   } catch {
     return null;

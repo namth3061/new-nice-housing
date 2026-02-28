@@ -7,13 +7,17 @@ import { Footer } from "../../../components/Layout/Footer";
 import { DetailsView } from "../../../views/DetailsView/DetailsView";
 import { Hotel } from "../../../types/hotel";
 import { propertyToHotel } from "../../../lib/propertyToHotel";
+import { HotelCard } from "../../../components/HotelCard/HotelCard";
+import { useLanguage } from "@/context/LanguageContext";
 
-export default function HotelDetailPage() {
+export default function ApartmentDetailPage() {
   const router = useRouter();
   const params = useParams();
   const slug = useMemo(() => (params?.slug ? String(params.slug) : null), [params?.slug]);
   const [toastMsg, setToastMsg] = useState<React.ReactNode | null>(null);
+  const { t } = useLanguage();
   const [hotel, setHotel] = useState<Hotel | null>(null);
+  const [relatedHotels, setRelatedHotels] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -39,14 +43,27 @@ export default function HotelDetailPage() {
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
+
+    fetch("/api/properties?limit=10")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          const mapped = data.map(propertyToHotel);
+          setRelatedHotels(mapped.filter((h) => h.slug !== slug).slice(0, 6));
+        } else if (data && Array.isArray(data.data)) {
+          const mapped = data.data.map(propertyToHotel);
+          setRelatedHotels(mapped.filter((h: Hotel) => h.slug !== slug).slice(0, 6));
+        }
+      })
+      .catch(console.error);
   }, [slug]);
 
   useEffect(() => {
     if (hotel) {
-      document.title = `${hotel.name} | NiceHousing`;
+      document.title = `${hotel.name} | NineHousing`;
     }
     return () => {
-      document.title = "NiceHousing";
+      document.title = "NineHousing";
     };
   }, [hotel]);
 
@@ -56,10 +73,10 @@ export default function HotelDetailPage() {
   };
 
   const goHome = () => router.push("/");
-  const goList = () => router.push("/hotel");
-  const onBack = () => router.push("/hotel");
-  const onBook = (h: Hotel) => router.push(`/hotel/${h.slug}/checkout`);
-  const onNavigateToDetails = (h: Hotel) => router.push(`/hotel/${h.slug}`);
+  const goList = () => router.push("/apartment");
+  const onBack = () => router.push("/apartment");
+  const onBook = (h: Hotel) => router.push(`/apartment/${h.slug}/checkout`);
+  const onNavigateToDetails = (h: Hotel) => router.push(`/apartment/${h.slug}`);
 
   if (loading) {
     return (
@@ -100,6 +117,19 @@ export default function HotelDetailPage() {
           onNavigateToDetails={onNavigateToDetails}
           showToast={showToast}
         />
+
+        {relatedHotels.length > 0 && (
+          <div style={{ maxWidth: '1200px', margin: '40px auto', padding: '0 20px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', color: 'var(--black)' }}>
+              {t('details.related')}
+            </h2>
+            <div className="hotels-grid">
+              {relatedHotels.map((h) => (
+                <HotelCard key={h.id} hotel={h} onClick={onNavigateToDetails} showToast={showToast} />
+              ))}
+            </div>
+          </div>
+        )}
       </main>
       <Footer goList={goList} showToast={showToast} />
     </>

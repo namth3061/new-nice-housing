@@ -22,21 +22,21 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## Database (PostgreSQL)
 
-The admin panel uses **MVC** with **PostgreSQL** (database: `nice_housing`).
+The admin panel uses **MVC** with **PostgreSQL** (database: `nine_housing`).
 
 1. **Create database and user** (if needed):
-   - Create DB: `CREATE DATABASE nice_housing;`
+   - Create DB: `CREATE DATABASE nine_housing;`
    - User: `root` / Password: `123456` (or set in `.env.local`)
 
 2. **Environment**: Copy or set in `.env.local`:
    ```env
-   DATABASE_URL=postgresql://root:123456@localhost:5432/nice_housing
+   DATABASE_URL=postgresql://root:123456@localhost:5432/nine_housing
    ```
 
 3. **Run schema and seed**:
    ```bash
-   psql -U root -d nice_housing -f scripts/schema.sql
-   psql -U root -d nice_housing -f scripts/seed-content.sql
+   psql -U root -d nine_housing -f scripts/schema.sql
+   psql -U root -d nine_housing -f scripts/seed-content.sql
    ```
 
 4. **Structure**:

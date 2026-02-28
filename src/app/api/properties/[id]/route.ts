@@ -10,7 +10,10 @@ export async function GET(
     if (!id) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
     const row = await Property.findPropertyById(id);
     if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    return NextResponse.json(row);
+    // Đảm bảo image/images luôn là mảng string để client hiển thị ảnh edit
+    const image = row.image ?? "";
+    const images = Array.isArray(row.images) ? row.images : (image ? [image] : []);
+    return NextResponse.json({ ...row, image, images });
   } catch (e) {
     console.error("GET /api/properties/[id]", e);
     return NextResponse.json({ error: "Failed to fetch property" }, { status: 500 });
@@ -28,6 +31,7 @@ export async function PUT(
     const updated = await Property.updateProperty(id, {
       slug: body.slug,
       name: body.name,
+      category: body.category ?? "",
       location: body.location,
       province: body.province,
       district: body.district,
@@ -37,6 +41,7 @@ export async function PUT(
       image: body.image,
       images: body.images,
       rawPrice: body.rawPrice ?? body.raw_price,
+      priceType: body.priceType ?? body.price_type,
       stars: body.stars,
       rating: body.rating,
       reviews: body.reviews,
@@ -46,6 +51,7 @@ export async function PUT(
       specs: body.specs,
       detailedAmenities: body.detailedAmenities ?? body.detailed_amenities,
       maxGuests: body.maxGuests ?? body.max_guests,
+      status: body.status === "unavailable" ? "unavailable" : "available",
     });
     if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(updated);

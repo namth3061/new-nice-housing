@@ -1,8 +1,8 @@
 # Database migrations
 
-Run migrations in order against the `nice_housing` database.
+Run migrations in order against the `Nine_housing` database.
 
-**Prerequisites:** PostgreSQL server running with database created (e.g. `CREATE DATABASE nice_housing;`). Set `DATABASE_URL` in `.env.local`.
+**Prerequisites:** PostgreSQL server running with database created (e.g. `CREATE DATABASE Nine_housing;`). Set `DATABASE_URL` in `.env.local`.
 
 ## Option 1: Node (no psql required)
 
@@ -23,8 +23,8 @@ This uses the project's `pg` package and reads `DATABASE_URL` from `.env.local` 
 ## Option 2: psql (if PostgreSQL client is installed)
 
 ```bash
-psql -U root -d nice_housing -f scripts/migrations/001_initial_schema.sql
-psql -U root -d nice_housing -f scripts/migrations/002_seed_content.sql
+psql -U root -d nine_housing -f scripts/migrations/001_initial_schema.sql
+psql -U root -d nine_housing -f scripts/migrations/002_seed_content.sql
 ```
 
 **Order:**

@@ -1,6 +1,6 @@
 -- Migration: 001_initial_schema
--- Description: Create initial tables and indexes for nice_housing
--- Run: psql -U root -d nice_housing -f scripts/migrations/001_initial_schema.sql
+-- Description: Create initial tables and indexes for Nine_housing
+-- Run: psql -U root -d Nine_housing -f scripts/migrations/001_initial_schema.sql
 
 -- Users (admin UI: name, email, phone, role, joinedAt, bookingsCount, status)
 CREATE TABLE IF NOT EXISTS users (

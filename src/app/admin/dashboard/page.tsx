@@ -22,18 +22,31 @@ import {
 
 const THEME_COLOR = "#F5D060";
 
-const formatVND = (amount: number) =>
-  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
+const formatUSD = (amount: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
 
-const REVENUE_DATA = [
-  { name: "Th1", revenue: 40000000, bookings: 240 },
-  { name: "Th2", revenue: 30000000, bookings: 198 },
-  { name: "Th3", revenue: 20000000, bookings: 150 },
-  { name: "Th4", revenue: 27800000, bookings: 210 },
-  { name: "Th5", revenue: 18900000, bookings: 120 },
-  { name: "Th6", revenue: 23900000, bookings: 170 },
-  { name: "Th7", revenue: 34900000, bookings: 250 },
-];
+type RevenuePeriodKey = "week" | "month" | "year";
+
+/** Map dữ liệu API (period = YYYY-MM-DD hoặc YYYY-MM) sang format biểu đồ. */
+function mapRevenueToChart(
+  rows: { period: string; revenue: number; bookings: number }[],
+  periodKey: RevenuePeriodKey
+) {
+  if (periodKey === "year") {
+    return rows.map((row, i) => ({
+      name: `Th${i + 1}`,
+      revenue: row.revenue,
+      bookings: row.bookings,
+    }));
+  }
+  return rows.map((row) => {
+    const d = new Date(row.period);
+    const day = d.getDate();
+    const month = d.getMonth() + 1;
+    const name = `${day}/${month}`;
+    return { name, revenue: row.revenue, bookings: row.bookings };
+  });
+}
 
 const statusStyles: Record<string, string> = {
   Confirmed: "badge badge-green",
@@ -55,6 +68,10 @@ export default function DashboardPage() {
     totalBookings: number;
     pendingCount: number;
     newUsersThisMonth: number;
+    revenueGrowthPercent?: number;
+    bookingsGrowthPercent?: number;
+    pendingGrowthPercent?: number;
+    newUsersGrowthPercent?: number;
   } | null>(null);
   const [recentBookings, setRecentBookings] = useState<Array<{
     id: string;
@@ -63,7 +80,10 @@ export default function DashboardPage() {
     total: number;
     status: string;
   }>>([]);
+  const [revenueByMonth, setRevenueByMonth] = useState<Array<{ name: string; revenue: number; bookings: number }>>([]);
+  const [revenuePeriod, setRevenuePeriod] = useState<RevenuePeriodKey>("month");
   const [loading, setLoading] = useState(true);
+  const [revenueLoading, setRevenueLoading] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -78,12 +98,26 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    setRevenueLoading(true);
+    fetch(`/api/dashboard/revenue-by-month?period=${revenuePeriod}`)
+      .then((r) => r.json())
+      .then((revenueRows) => {
+        setRevenueByMonth(Array.isArray(revenueRows) ? mapRevenueToChart(revenueRows, revenuePeriod) : []);
+      })
+      .catch(console.error)
+      .finally(() => setRevenueLoading(false));
+  }, [revenuePeriod]);
+
+  const formatGrowth = (pct: number | undefined) =>
+    pct == null ? "—" : pct >= 0 ? `+${pct}%` : `${pct}%`;
+
   const stats = [
     {
       label: "Tổng doanh thu",
-      value: statsData ? formatVND(statsData.totalRevenue) : "—",
-      growth: "+12%",
-      up: true,
+      value: statsData ? formatUSD(statsData.totalRevenue) : "—",
+      growth: formatGrowth(statsData?.revenueGrowthPercent),
+      up: (statsData?.revenueGrowthPercent ?? 0) >= 0,
       icon: DollarSign,
       iconBg: "rgba(245,208,96,0.15)",
       iconColor: "#92670a",
@@ -92,8 +126,8 @@ export default function DashboardPage() {
     {
       label: "Tổng Booking",
       value: statsData?.totalBookings?.toLocaleString() ?? "—",
-      growth: "+5.4%",
-      up: true,
+      growth: formatGrowth(statsData?.bookingsGrowthPercent),
+      up: (statsData?.bookingsGrowthPercent ?? 0) >= 0,
       icon: CalendarCheck,
       iconBg: "rgba(16,185,129,0.12)",
       iconColor: "#059669",
@@ -102,8 +136,8 @@ export default function DashboardPage() {
     {
       label: "Chờ xử lý",
       value: String(statsData?.pendingCount ?? "—"),
-      growth: "-2%",
-      up: false,
+      growth: formatGrowth(statsData?.pendingGrowthPercent),
+      up: (statsData?.pendingGrowthPercent ?? 0) <= 0,
       icon: Clock,
       iconBg: "rgba(239,68,68,0.1)",
       iconColor: "#dc2626",
@@ -112,8 +146,8 @@ export default function DashboardPage() {
     {
       label: "Người dùng mới",
       value: String(statsData?.newUsersThisMonth ?? "—"),
-      growth: "+18%",
-      up: true,
+      growth: formatGrowth(statsData?.newUsersGrowthPercent),
+      up: (statsData?.newUsersGrowthPercent ?? 0) >= 0,
       icon: Users,
       iconBg: "rgba(99,102,241,0.12)",
       iconColor: "#4f46e5",
@@ -130,7 +164,7 @@ export default function DashboardPage() {
             Tổng quan hệ thống
           </h2>
           <p style={{ fontSize: "13px", color: "#94a3b8" }}>
-            Thống kê hoạt động của NiceHousing
+            Thống kê hoạt động của NineHousing
           </p>
         </div>
         <div
@@ -198,20 +232,48 @@ export default function DashboardPage() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: "20px" }}>
         {/* Revenue Chart */}
         <div className="admin-card" style={{ padding: "24px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "12px" }}>
             <div>
               <h3 style={{ fontWeight: 800, color: "#0f172a", fontSize: "15px" }}>
                 Phân tích doanh thu
               </h3>
-              <p style={{ fontSize: "12px", color: "#94a3b8", marginTop: "2px" }}>7 tháng gần đây (VNĐ)</p>
+              <p style={{ fontSize: "12px", color: "#94a3b8", marginTop: "2px" }}>
+                {revenuePeriod === "week" ? "7 ngày gần đây" : revenuePeriod === "month" ? "30 ngày gần đây" : "12 tháng gần đây"} (USD)
+              </p>
             </div>
-            <span className="badge badge-gold">
-              <ArrowUpRight size={12} style={{ marginRight: "3px" }} /> +12% tháng này
-            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              {(["week", "month", "year"] as const).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setRevenuePeriod(p)}
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    padding: "6px 12px",
+                    borderRadius: "8px",
+                    border: revenuePeriod === p ? "none" : "1px solid #e2e8f0",
+                    background: revenuePeriod === p ? "#F5D060" : "white",
+                    color: revenuePeriod === p ? "#0f172a" : "#64748b",
+                    cursor: "pointer",
+                  }}
+                >
+                  {p === "week" ? "1 Tuần" : p === "month" ? "1 Tháng" : "1 Năm"}
+                </button>
+              ))}
+              <span className="badge badge-gold" style={{ marginLeft: "4px" }}>
+                <ArrowUpRight size={12} style={{ marginRight: "3px" }} /> {formatGrowth(statsData?.revenueGrowthPercent)} tháng này
+              </span>
+            </div>
           </div>
-          <div style={{ height: "280px" }}>
+          <div style={{ height: "280px", position: "relative" }}>
+            {revenueLoading && (
+              <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.7)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px", zIndex: 1 }}>
+                <span style={{ fontSize: "13px", color: "#64748b" }}>Đang tải...</span>
+              </div>
+            )}
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={REVENUE_DATA} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+              <AreaChart data={revenueByMonth} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor={THEME_COLOR} stopOpacity={0.25} />
@@ -230,12 +292,12 @@ export default function DashboardPage() {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: "#94a3b8", fontSize: 11 }}
-                  tickFormatter={(v) => `${v / 1000000}M`}
+                  tickFormatter={(v) => (v >= 1e6 ? `$${Math.round(v / 1e6)}M` : v >= 1e3 ? `$${Math.round(v / 1e3)}K` : `$${v}`)}
                   width={40}
                 />
                 <Tooltip
                   formatter={(value: number | undefined) =>
-                    value != null ? formatVND(value) : ""
+                    value != null ? formatUSD(value) : ""
                   }
                   contentStyle={{
                     borderRadius: "12px",
@@ -309,7 +371,7 @@ export default function DashboardPage() {
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
                   <p style={{ fontSize: "12px", fontWeight: 700, color: "#0f172a", margin: 0 }}>
-                    {formatVND(bk.total)}
+                    {formatUSD(bk.total)}
                   </p>
                   <span className={statusStyles[bk.status] || "badge badge-slate"} style={{ marginTop: "2px", fontSize: "10px" }}>
                     {statusLabels[bk.status] || bk.status}

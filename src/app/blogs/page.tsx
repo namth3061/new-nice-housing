@@ -26,16 +26,11 @@ function BlogsContent() {
   const searchParams = useSearchParams();
   const { t, language } = useLanguage();
   const pageFromUrl = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
-  const [toastMsg, setToastMsg] = useState<React.ReactNode | null>(null);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(pageFromUrl);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const showToast = (msg: React.ReactNode) => {
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 4000);
-  };
 
   useEffect(() => {
     setPage(Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1));
@@ -82,8 +77,7 @@ function BlogsContent() {
 
   return (
     <>
-      {toastMsg && <div className="toast-overlay">{toastMsg}</div>}
-      <Navbar showToast={showToast} />
+      <Navbar />
       <main className="list-page page-transition" style={{ minHeight: "80vh", display: "flex", flexDirection: "column" }}>
         <div style={{ flex: "1 0 auto" }}>
           <div className="section-header" style={{ marginBottom: "32px" }}>
@@ -141,7 +135,7 @@ function BlogsContent() {
           </nav>
         )}
       </main>
-      <Footer goList={() => router.push("/apartment")} showToast={showToast} />
+      <Footer goList={() => router.push("/apartment")} />
     </>
   );
 }

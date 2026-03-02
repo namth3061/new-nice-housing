@@ -10,13 +10,12 @@ interface ListViewProps {
     loading?: boolean;
     onNavigateToDetails: (hotel: Hotel) => void;
     onBack: () => void;
-    showToast: (msg: React.ReactNode) => void;
     totalCount?: number;
     initialFilters?: { price: string[]; stars: number[]; amenities: string[]; province?: string };
     onSearch?: (filters: { price: string[]; stars: number[]; amenities: string[]; province?: string }) => void;
 }
 
-export const ListView: React.FC<ListViewProps> = ({ hotels, loading, onNavigateToDetails, onBack, showToast, totalCount, initialFilters, onSearch }) => {
+export const ListView: React.FC<ListViewProps> = ({ hotels, loading, onNavigateToDetails, onBack, totalCount, initialFilters, onSearch }) => {
     const { t } = useLanguage();
     const [filters, setFilters] = useState<{ price: string[]; stars: number[]; amenities: string[]; province: string }>({
         price: initialFilters?.price ?? [],
@@ -68,8 +67,14 @@ export const ListView: React.FC<ListViewProps> = ({ hotels, loading, onNavigateT
     }, [hotels, loading, sortOrder]);
 
     return (
-        <div className="list-page page-transition">
-            <div className="breadcrumb"><span onClick={onBack}>{t('common.home')}</span> <i className="fa-solid fa-chevron-right" style={{ fontSize: '10px' }}></i> <strong style={{ color: 'var(--black)' }}>{t('common.apartments')}</strong></div>
+        <div className="page-transition">
+            <div className="section-header" style={{ marginBottom: '32px' }}>
+                <div>
+                    <div className="section-eyebrow"><i className="fa-solid fa-building"></i> {t('list.eyebrow')}</div>
+                    <h1 className="section-title">{t('common.apartments')}</h1>
+                </div>
+            </div>
+            {/* <div className="breadcrumb" style={{ marginBottom: '16px' }}><span onClick={onBack} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && onBack()}>{t('common.home')}</span> <i className="fa-solid fa-chevron-right" style={{ fontSize: '10px' }}></i> <strong style={{ color: 'var(--black)' }}>{t('common.apartments')}</strong></div> */}
             <div className="list-layout">
                 <div className={`filter-sidebar ${filtersOpen ? 'is-open' : ''}`}>
                     <div className="filter-header" onClick={() => setFiltersOpen((o) => !o)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFiltersOpen((o) => !o); } }} aria-expanded={filtersOpen}>
@@ -120,7 +125,7 @@ export const ListView: React.FC<ListViewProps> = ({ hotels, loading, onNavigateT
                     {loading ? (
                         <div className="empty-state"><h3>{t('list.loading_list')}</h3></div>
                     ) : filteredHotels.length > 0 ? (
-                        <div className="hotels-grid">{filteredHotels.map(h => <HotelCard key={h.id} hotel={h} onClick={onNavigateToDetails} showToast={showToast} />)}</div>
+                        <div className="hotels-grid">{filteredHotels.map(h => <HotelCard key={h.id} hotel={h} onClick={onNavigateToDetails} />)}</div>
                     ) : (
                         <div className="empty-state"><h3>{t('list.no_results')}</h3><button className="btn-outline" style={{ width: 'auto', borderColor: 'var(--gold)', color: 'var(--gold-dark)' }} onClick={() => setFilters({ price: [], stars: [], amenities: [], province: '' })}>{t('common.clear_filters')}</button></div>
                     )}

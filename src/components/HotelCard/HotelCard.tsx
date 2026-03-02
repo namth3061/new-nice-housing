@@ -8,10 +8,9 @@ import { useLanguage } from '@/context/LanguageContext';
 interface HotelCardProps {
     hotel: Hotel;
     onClick: (hotel: Hotel) => void;
-    showToast: (msg: React.ReactNode) => void;
 }
 
-export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onClick, showToast }) => {
+export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onClick }) => {
     const { t } = useLanguage();
     const [isFav, setIsFav] = useState(false);
 
@@ -24,12 +23,6 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onClick, showToast 
                 <div className={`card-fav ${isFav ? 'active' : ''}`} onClick={(e) => {
                     e.stopPropagation();
                     setIsFav(!isFav);
-                    showToast(
-                        <span>
-                            <i className={`fa-${!isFav ? 'solid' : 'regular'} fa-heart`}></i>
-                            {!isFav ? `${t('common.saved')} ${hotel.name}` : `${t('common.unsaved')} ${hotel.name}`}
-                        </span>
-                    );
                 }}>
                     <i className={`${isFav ? 'fa-solid' : 'fa-regular'} fa-heart`}></i>
                 </div>

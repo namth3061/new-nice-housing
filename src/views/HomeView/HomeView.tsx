@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Hotel } from '../../types/hotel';
@@ -31,10 +32,9 @@ interface HomeViewProps {
     loading?: boolean;
     onNavigateToList: () => void;
     onNavigateToDetails: (hotel: Hotel) => void;
-    showToast: (msg: React.ReactNode) => void;
 }
 
-export const HomeView: React.FC<HomeViewProps> = ({ hotels, loading, onNavigateToList, onNavigateToDetails, showToast }) => {
+export const HomeView: React.FC<HomeViewProps> = ({ hotels, loading, onNavigateToList, onNavigateToDetails }) => {
     const router = useRouter();
     const { t, language } = useLanguage();
     const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
@@ -48,6 +48,18 @@ export const HomeView: React.FC<HomeViewProps> = ({ hotels, loading, onNavigateT
     const destIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const [settings, setSettings] = useState<any>(null);
+    const [galleryLightboxUrl, setGalleryLightboxUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setGalleryLightboxUrl(null); };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, []);
+
+    useEffect(() => {
+        document.body.style.overflow = galleryLightboxUrl ? 'hidden' : '';
+        return () => { document.body.style.overflow = ''; };
+    }, [galleryLightboxUrl]);
 
     useEffect(() => {
         fetch("/api/settings")
@@ -83,17 +95,20 @@ export const HomeView: React.FC<HomeViewProps> = ({ hotels, loading, onNavigateT
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
+    const STATS_SLIDE_MS = 3500;
+    const DEST_SLIDE_MS = 5500; // Popular Destinations runs slower than stats
+
     useEffect(() => {
         if (isMobile) {
             stopDestAuto();
             destIntervalRef.current = setInterval(() => {
                 setDestSlide((prev) => (prev + 1) % DESTINATIONS.length);
-            }, 3500);
+            }, DEST_SLIDE_MS);
 
             stopStatsAuto();
             statsIntervalRef.current = setInterval(() => {
                 setStatsSlide((prev) => (prev + 1) % 4);
-            }, 3500);
+            }, STATS_SLIDE_MS);
 
             stopFeaturesAuto();
             featuresIntervalRef.current = setInterval(() => {
@@ -151,9 +166,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ hotels, loading, onNavigateT
     }, []);
 
     const goToSearchResult = () => {
-        showToast(<span><i className="fa-solid fa-magnifying-glass"></i> {t('home.searching')}</span>);
         const query = selectedProvince.trim() ? `?province=${encodeURIComponent(selectedProvince.trim())}` : "";
-        setTimeout(() => router.push(`/apartment${query}`), 500);
+        router.push(`/apartment${query}`);
     };
 
     const formatDate = (dateStr: string) => {
@@ -276,7 +290,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ hotels, loading, onNavigateT
                             stopDestAuto();
                             destIntervalRef.current = setInterval(() => {
                                 setDestSlide((prev) => (prev + 1) % DESTINATIONS.length);
-                            }, 3500);
+                            }, DEST_SLIDE_MS);
                         }
                     }}
                 >
@@ -327,7 +341,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ hotels, loading, onNavigateT
                             key={hotel.id}
                             hotel={hotel}
                             onClick={(h) => router.push(`/apartment/${h.slug}`)}
-                            showToast={showToast}
                         />
                     ))}
                 </div>
@@ -476,8 +489,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ hotels, loading, onNavigateT
                     {hotels.length > 0 && (
                         <>
                             {/* Large featured image */}
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <div className="gallery-featured">
+                            <div className="gallery-featured" onClick={() => hotels[0]?.image && setGalleryLightboxUrl(hotels[0].image)} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && hotels[0]?.image && setGalleryLightboxUrl(hotels[0].image)} aria-label="Xem ảnh phóng to">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={hotels[0]?.image} alt={hotels[0]?.name || 'Gallery'} />
                                 <div className="gallery-overlay">
                                     <i className="fa-solid fa-expand"></i>
@@ -486,7 +499,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ hotels, loading, onNavigateT
                             {/* 3×2 grid of thumbnails */}
                             <div className="gallery-grid">
                                 {hotels.slice(1, 7).map((hotel, idx) => (
-                                    <div key={idx} className="gallery-thumb">
+                                    <div key={idx} className="gallery-thumb" onClick={() => setGalleryLightboxUrl(hotel.image)} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && setGalleryLightboxUrl(hotel.image)} aria-label="Xem ảnh phóng to">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img src={hotel.image} alt={hotel.name} />
                                         <div className="gallery-overlay">
@@ -498,6 +511,18 @@ export const HomeView: React.FC<HomeViewProps> = ({ hotels, loading, onNavigateT
                         </>
                     )}
                 </div>
+
+                {/* Gallery lightbox - render in body so it's always on top */}
+                {typeof document !== 'undefined' && galleryLightboxUrl && createPortal(
+                    <div className="gallery-lightbox" onClick={() => setGalleryLightboxUrl(null)} role="dialog" aria-modal="true" aria-label="Ảnh phóng to">
+                        <button type="button" className="gallery-lightbox-close" onClick={(e) => { e.stopPropagation(); setGalleryLightboxUrl(null); }} aria-label="Đóng">
+                            <i className="fa-solid fa-xmark"></i>
+                        </button>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={galleryLightboxUrl} alt="" onClick={(e) => e.stopPropagation()} />
+                    </div>,
+                    document.body
+                )}
             </section>
         </div>
     );

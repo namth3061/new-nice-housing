@@ -4,10 +4,9 @@ import { useRouter } from 'next/navigation';
 
 interface FooterProps {
     goList: () => void;
-    showToast: (msg: React.ReactNode) => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ goList, showToast }) => {
+export const Footer: React.FC<FooterProps> = ({ goList }) => {
     const { t, language } = useLanguage();
     const router = useRouter();
     const [settings, setSettings] = useState<any>(null);
@@ -33,7 +32,7 @@ export const Footer: React.FC<FooterProps> = ({ goList, showToast }) => {
             <div className="footer-grid">
                 <div>
                     <div className="footer-logo" style={{ marginBottom: '16px' }}>
-                        <img src="/logo.png" alt="Nine Housing" style={{ height: '48px', width: 'auto' }} />
+                        <img src={settings?.logo_url || '/logo.png'} alt="Nine Housing" style={{ height: '48px', width: 'auto' }} />
                     </div>
                     <div className="footer-desc">{t('footer.desc')}</div>
                 </div>
@@ -45,8 +44,8 @@ export const Footer: React.FC<FooterProps> = ({ goList, showToast }) => {
                 </div>
                 <div className="footer-col">
                     <h5>{t('home.support')}</h5>
-                    <a onClick={() => showToast(<span><i className="fa-solid fa-screwdriver-wrench"></i> {t('common.maintenance')}</span>)}>{t('home.help_center')}</a>
-                    <a onClick={() => showToast(<span><i className="fa-solid fa-shield-halved"></i> {t('common.secure_payment')}</span>)}>{t('common.secure_payment')}</a>
+                    <a href="#">{t('home.help_center')}</a>
+                    <a href="#">{t('common.secure_payment')}</a>
                 </div>
                 <div className="footer-col" style={{ flex: 1.5, minWidth: '250px' }}>
                     <h5>{t('footer.contact_info')}</h5>

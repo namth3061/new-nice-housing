@@ -120,7 +120,6 @@ export default function UsersPage() {
               <th>Liên hệ</th>
               <th>Vai trò</th>
               <th>Ngày tham gia</th>
-              <th style={{ textAlign: "center" }}>Đơn hàng</th>
               <th>Trạng thái</th>
               <th></th>
             </tr>
@@ -158,9 +157,6 @@ export default function UsersPage() {
                   <span className={roleConfig[u.role].cls}>{roleConfig[u.role].label}</span>
                 </td>
                 <td style={{ color: "#64748b", fontSize: "13px" }}>{formatJoinedAt(u.joinedAt)}</td>
-                <td style={{ textAlign: "center" }}>
-                  <span style={{ fontWeight: 700, color: "#0f172a" }}>{u.bookingsCount}</span>
-                </td>
                 <td>
                   <span className={u.status === "active" ? "badge badge-green" : "badge badge-red"}>
                     {u.status === "active" ? "Hoạt động" : "Đã khóa"}

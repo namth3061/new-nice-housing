@@ -20,12 +20,6 @@ interface ListPageClientProps {
 export const ListPageClient: React.FC<ListPageClientProps> = ({ basePath, hotels, total, totalPages, currentPage, initialFilters }) => {
     const router = useRouter();
     const { t } = useLanguage();
-    const [toastMsg, setToastMsg] = useState<React.ReactNode | null>(null);
-
-    const showToast = (msg: React.ReactNode) => {
-        setToastMsg(msg);
-        setTimeout(() => setToastMsg(null), 4000);
-    };
 
     const goHome = () => router.push("/");
     const goList = () => router.push(basePath);
@@ -52,16 +46,14 @@ export const ListPageClient: React.FC<ListPageClientProps> = ({ basePath, hotels
 
     return (
         <>
-            {toastMsg && <div className="toast-overlay">{toastMsg}</div>}
-            <Navbar view="list" goHome={goHome} goList={goList} showToast={showToast} />
-            <main style={{ minHeight: "80vh", display: "flex", flexDirection: "column" }}>
-                <div style={{ flex: "1 0 auto" }}>
+            <Navbar view="list" goHome={goHome} goList={goList} />
+            <main className="list-page page-transition" style={{ minHeight: "80vh", display: "flex", flexDirection: "column" }}>
+                <div style={{ flex: "1 0 auto", paddingLeft: "24px", paddingRight: "24px" }}>
                     <ListView
                         hotels={hotels}
                         loading={false}
                         onNavigateToDetails={onNavigateToDetails}
                         onBack={onBack}
-                        showToast={showToast}
                         totalCount={total}
                         initialFilters={initialFilters}
                         onSearch={handleSearch}
@@ -93,7 +85,7 @@ export const ListPageClient: React.FC<ListPageClientProps> = ({ basePath, hotels
                     </nav>
                 )}
             </main>
-            <Footer goList={goList} showToast={showToast} />
+            <Footer goList={goList} />
         </>
     );
 };

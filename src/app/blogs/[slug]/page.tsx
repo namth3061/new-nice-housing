@@ -41,7 +41,6 @@ export default function BlogPostPage() {
   const router = useRouter();
   const { t, language } = useLanguage();
   const slug = useMemo(() => (params?.slug ? String(params.slug) : null), [params?.slug]);
-  const [toastMsg, setToastMsg] = useState<React.ReactNode | null>(null);
   const [post, setPost] = useState<BlogPost | null>(null);
   const [allPosts, setAllPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(!!slug);
@@ -74,11 +73,6 @@ export default function BlogPostPage() {
     return () => { document.title = "Nine Housing"; };
   }, [post]);
 
-  const showToast = (msg: React.ReactNode) => {
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 4000);
-  };
-
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
     return d.toLocaleDateString(language === "vi" ? "vi-VN" : "en-US", { day: "numeric", month: "long", year: "numeric" });
@@ -88,33 +82,32 @@ export default function BlogPostPage() {
   if (loading) {
     return (
       <>
-        <Navbar showToast={showToast} />
+        <Navbar />
         <main className="list-page" style={{ minHeight: "80vh", paddingTop: "100px", textAlign: "center" }}>
           <p style={{ color: "var(--mid)" }}>{t("blogs.loading")}</p>
         </main>
-        <Footer goList={() => router.push("/hotel")} showToast={showToast} />
+        <Footer goList={() => router.push("/apartment")} />
       </>
     );
   }
   if (!post) {
     return (
       <>
-        <Navbar showToast={showToast} />
+        <Navbar />
         <main className="list-page" style={{ minHeight: "80vh", paddingTop: "100px", textAlign: "center" }}>
           <p>{t("blogs.post_not_found")}</p>
           <Link href="/blogs" className="btn-gold" style={{ display: "inline-block", width: "auto", marginTop: 16 }}>
             {t("blogs.back_to_blogs")}
           </Link>
         </main>
-        <Footer goList={() => router.push("/hotel")} showToast={showToast} />
+        <Footer goList={() => router.push("/apartment")} />
       </>
     );
   }
 
   return (
     <>
-      {toastMsg && <div className="toast-overlay">{toastMsg}</div>}
-      <Navbar showToast={showToast} />
+      <Navbar />
       <main className="list-page page-transition" style={{ minHeight: "80vh" }}>
         <div className="breadcrumb">
           <Link href="/">{t("common.home")}</Link>
@@ -166,7 +159,7 @@ export default function BlogPostPage() {
           </aside>
         </div>
       </main>
-      <Footer goList={() => router.push("/apartment")} showToast={showToast} />
+      <Footer goList={() => router.push("/apartment")} />
     </>
   );
 }

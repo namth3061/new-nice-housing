@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronLeft, Save, Globe, Mail, Phone, MapPin } from "lucide-react";
+import { ChevronLeft, Save, Globe, Mail, Phone, MapPin, ImageIcon } from "lucide-react";
 
 function FieldLabel({ icon: Icon, children }: { icon?: React.ElementType; children: React.ReactNode }) {
   return (
@@ -27,6 +27,8 @@ export default function AdminSettingsPage() {
     banner_active: false,
     banner_image: "",
     banner_link: "",
+    logo_url: "",
+    favicon_url: "",
   });
 
   useEffect(() => {
@@ -71,6 +73,48 @@ export default function AdminSettingsPage() {
       }
     } catch {
       setMsg({ type: "error", text: "Có lỗi khi tải ảnh lên." });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload/image", { method: "POST", body: formData });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setSettings((prev) => ({ ...prev, logo_url: data.url }));
+        setMsg({ type: "success", text: "Tải logo lên thành công!" });
+        setTimeout(() => setMsg(null), 3000);
+      } else throw new Error(data.error || "Upload failed");
+    } catch {
+      setMsg({ type: "error", text: "Có lỗi khi tải logo lên." });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload/image", { method: "POST", body: formData });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setSettings((prev) => ({ ...prev, favicon_url: data.url }));
+        setMsg({ type: "success", text: "Tải favicon lên thành công!" });
+        setTimeout(() => setMsg(null), 3000);
+      } else throw new Error(data.error || "Upload failed");
+    } catch {
+      setMsg({ type: "error", text: "Có lỗi khi tải favicon lên." });
     } finally {
       setSaving(false);
     }
@@ -137,6 +181,58 @@ export default function AdminSettingsPage() {
           {msg.text}
         </div>
       )}
+
+      {/* LOGO & FAVICON */}
+      <div className="admin-form-card" style={{ marginBottom: 24 }}>
+        <div className="admin-form-card-header">
+          <ImageIcon size={14} style={{ color: "var(--a-gold)" }} />
+          <span className="admin-form-card-header-title">Quản lý Logo & Favicon</span>
+          <div className="admin-form-card-header-dot" />
+        </div>
+        <div className="admin-form-card-body" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          <div className="admin-form-field">
+            <FieldLabel icon={ImageIcon}>Logo website</FieldLabel>
+            <p style={{ fontSize: "12px", color: "#64748b", marginBottom: "8px" }}>
+              Logo hiển thị ở Navbar, Footer và trang Admin. Nên dùng ảnh nền trong (PNG) kích thước ~200x50px.
+            </p>
+            {settings.logo_url && (
+              <div style={{ marginBottom: "12px", borderRadius: "8px", overflow: "hidden", border: "1px solid #e2e8f0", display: "inline-block" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={settings.logo_url} alt="Logo" style={{ height: "48px", width: "auto", display: "block" }} />
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleLogoUpload}
+              className="admin-form-input"
+              style={{ padding: "8px" }}
+              disabled={saving}
+            />
+          </div>
+          <div className="admin-form-field">
+            <FieldLabel icon={ImageIcon}>Favicon</FieldLabel>
+            <p style={{ fontSize: "12px", color: "#64748b", marginBottom: "8px" }}>
+              Icon hiển thị trên tab trình duyệt. Nên dùng ảnh vuông 32x32 hoặc 64x64px (ICO hoặc PNG).
+            </p>
+            {settings.favicon_url && (
+              <div style={{ marginBottom: "12px", display: "flex", alignItems: "center", gap: "12px" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={settings.favicon_url} alt="Favicon" style={{ width: "32px", height: "32px", objectFit: "contain", border: "1px solid #e2e8f0", borderRadius: "4px" }} />
+                <span style={{ fontSize: "12px", color: "#64748b" }}>Xem trước</span>
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/*,.ico"
+              onChange={handleFaviconUpload}
+              className="admin-form-input"
+              style={{ padding: "8px" }}
+              disabled={saving}
+            />
+          </div>
+        </div>
+      </div>
 
       {/* BANNER MANAGEMENT */}
       <div className="admin-form-card" style={{ marginBottom: 24 }}>

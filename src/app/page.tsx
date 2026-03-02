@@ -64,16 +64,16 @@ export default function App() {
     <>
       {toastMsg && <div className="toast-overlay">{toastMsg}</div>}
 
-      <Navbar view={view} goHome={goHome} goList={goList} showToast={showToast} />
+      <Navbar view={view} goHome={goHome} goList={goList} />
 
       <main style={{ minHeight: '80vh' }}>
-        {view === 'home' && <HomeView hotels={hotels} loading={hotelsLoading} onNavigateToList={goList} onNavigateToDetails={goDetails} showToast={showToast} />}
-        {view === 'list' && <ListView hotels={hotels} loading={hotelsLoading} onNavigateToDetails={goDetails} onBack={goHome} showToast={showToast} />}
-        {view === 'details' && activeHotel && <DetailsView hotel={activeHotel} onBack={goList} onBook={goCheckout} onNavigateToDetails={goDetails} showToast={showToast} />}
+        {view === 'home' && <HomeView hotels={hotels} loading={hotelsLoading} onNavigateToList={goList} onNavigateToDetails={goDetails} />}
+        {view === 'list' && <ListView hotels={hotels} loading={hotelsLoading} onNavigateToDetails={goDetails} onBack={goHome} />}
+        {view === 'details' && activeHotel && <DetailsView hotel={activeHotel} onBack={goList} onBook={goCheckout} onNavigateToDetails={goDetails} />}
         {view === 'checkout' && activeHotel && <CheckoutView hotel={activeHotel} onBack={() => goDetails(activeHotel)} onConfirm={handleConfirm} />}
       </main>
 
-      <Footer goList={goList} showToast={showToast} />
+      <Footer goList={goList} />
     </>
   );
 }

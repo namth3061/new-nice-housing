@@ -123,6 +123,7 @@ export async function findPropertiesPaginated(options: {
   price_max?: number;
   amenities?: string;
   province?: string;
+  category?: string;
   status?: "available" | "unavailable";
   page?: number;
   limit?: number;
@@ -136,6 +137,11 @@ export async function findPropertiesPaginated(options: {
   if (options.status) {
     where += ` AND status = $${i}`;
     params.push(options.status);
+    i++;
+  }
+  if (options.category && options.category.trim() !== "") {
+    where += ` AND category = $${i}`;
+    params.push(options.category.trim());
     i++;
   }
   if (options.province && options.province.trim() !== "") {

@@ -10,6 +10,7 @@ export async function GET(request: Request) {
     const price_max_param = searchParams.get("price_max");
     const amenities = searchParams.get("amenities") ?? undefined;
     const province = searchParams.get("province") ?? undefined;
+    const category = searchParams.get("category") ?? undefined;
 
     const pageParam = searchParams.get("page");
     const limitParam = searchParams.get("limit");
@@ -27,6 +28,7 @@ export async function GET(request: Request) {
         price_max,
         amenities,
         province,
+        category,
         status: "available",
         page: page ?? 1,
         limit: limit ?? 10,

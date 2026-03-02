@@ -54,6 +54,17 @@ const menuGroups = [
 function Sidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [logoUrl, setLogoUrl] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && !data.error && data.logo_url) setLogoUrl(data.logo_url);
+      })
+      .catch(() => {});
+  }, []);
+
   const contentType = pathname === "/admin/content" ? searchParams.get("type") : null;
 
   const getActiveId = () => {
@@ -70,7 +81,7 @@ function Sidebar() {
     <aside className="admin-sidebar">
       {/* Logo */}
       <div className="admin-sidebar-logo" style={{ padding: '24px 20px', display: 'flex', justifyContent: 'center' }}>
-        <img src="/logo.png" alt="Nine Housing" style={{ height: '48px', width: 'auto' }} />
+        <img src={logoUrl || '/logo.png'} alt="Nine Housing" style={{ height: '48px', width: 'auto' }} />
       </div>
 
       {/* Navigation */}

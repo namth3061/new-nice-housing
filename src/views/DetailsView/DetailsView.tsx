@@ -2,20 +2,29 @@
 
 import React, { useState, useEffect } from 'react';
 import { Hotel } from '../../types/hotel';
-import { renderStars } from '../../utils/format';
 import { useLanguage } from '@/context/LanguageContext';
+import { BOOKING_DRAFT_KEY } from '@/lib/bookingDraftStorage';
 
 interface DetailsViewProps {
     hotel: Hotel;
     onBack: () => void;
     onBook: (hotel: Hotel) => void;
     onNavigateToDetails: (hotel: Hotel) => void;
-    showToast: (msg: React.ReactNode) => void;
 }
 
-export const DetailsView: React.FC<DetailsViewProps> = ({ hotel, onBack, onBook, onNavigateToDetails, showToast }) => {
+function todayStr() {
+    return new Date().toISOString().split('T')[0];
+}
+
+export const DetailsView: React.FC<DetailsViewProps> = ({ hotel, onBack, onBook, onNavigateToDetails }) => {
     const { t } = useLanguage();
     const [activeImg, setActiveImg] = useState(0);
+    const [isFav, setIsFav] = useState(false);
+    const [checkIn, setCheckIn] = useState(todayStr);
+    const [checkOut, setCheckOut] = useState('');
+    const [guests, setGuests] = useState(1);
+    const maxGuests: number = Math.max(1, Number(hotel.specs?.guests) || 10);
+
     useEffect(() => { window.scrollTo(0, 0); }, [hotel]);
 
     return (
@@ -37,6 +46,17 @@ export const DetailsView: React.FC<DetailsViewProps> = ({ hotel, onBack, onBook,
                 <div className="slider-main">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={hotel.images[activeImg] || hotel.image} alt="main" />
+                    <button
+                        type="button"
+                        className={`details-heart ${isFav ? 'active' : ''}`}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsFav(!isFav);
+                        }}
+                        aria-label={isFav ? t('common.unsaved') : t('common.saved')}
+                    >
+                        <i className={`${isFav ? 'fa-solid' : 'fa-regular'} fa-heart`}></i>
+                    </button>
                 </div>
                 <div className="slider-thumbs">
                     {hotel.images.map((img, idx) => (
@@ -77,13 +97,51 @@ export const DetailsView: React.FC<DetailsViewProps> = ({ hotel, onBack, onBook,
                         <div className="booking-meta"><span>{t('details.service_fee_included')}</span></div>
                         <div className="form-group" style={{ marginTop: '24px' }}>
                             <label>{t('details.checkin')} - {t('details.checkout')}</label>
-                            <div className="form-row"><input type="date" /><input type="date" /></div>
+                            <div className="form-row">
+                                <input
+                                    type="date"
+                                    min={todayStr()}
+                                    value={checkIn}
+                                    onChange={(e) => setCheckIn(e.target.value)}
+                                />
+                                <input
+                                    type="date"
+                                    min={checkIn || todayStr()}
+                                    value={checkOut}
+                                    onChange={(e) => setCheckOut(e.target.value)}
+                                    placeholder={t('details.checkout')}
+                                />
+                            </div>
                         </div>
                         <div className="form-group">
                             <label>{t('details.guests')}</label>
-                            <select><option>{t('details.guests_1')}</option><option>{t('details.guests_2')}</option><option>{t('details.guests_other')}</option></select>
+                            <select
+                                value={guests}
+                                onChange={(e) => setGuests(Number(e.target.value))}
+                            >
+                                {(() => {
+                                    const opts: number[] = [];
+                                    for (let i = 1; i <= maxGuests; i++) opts.push(i);
+                                    return opts.map((n) => (
+                                        <option key={n} value={n}>
+                                            {n === 1 ? t('details.guests_1') : n === 2 ? t('details.guests_2') : `${n} ${t('details.guests')}`}
+                                        </option>
+                                    ));
+                                })()}
+                            </select>
                         </div>
-                        <button className="btn-book" onClick={() => onBook(hotel)}><i className="fa-solid fa-wand-magic-sparkles"></i> {t('common.book_now')}</button>
+                        <button
+                            className="btn-book"
+                            onClick={() => {
+                                try {
+                                    const draft = { slug: hotel.slug, checkIn, checkOut: checkOut || undefined, guests };
+                                    localStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(draft));
+                                } catch (_) {}
+                                onBook(hotel);
+                            }}
+                        >
+                            <i className="fa-solid fa-wand-magic-sparkles"></i> {t('common.book_now')}
+                        </button>
                     </div>
                 </div>
             </div>

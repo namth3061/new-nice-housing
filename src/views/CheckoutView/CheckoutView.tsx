@@ -19,13 +19,14 @@ interface CheckoutViewProps {
     hotel: Hotel;
     onBack: () => void;
     onConfirm: (data: BookingFormData) => Promise<void>;
+    initialData?: Partial<Pick<BookingFormData, 'checkIn' | 'checkOut' | 'guests'>>;
 }
 
 function toDateInputMin() {
     return new Date().toISOString().split('T')[0];
 }
 
-export const CheckoutView: React.FC<CheckoutViewProps> = ({ hotel, onBack, onConfirm }) => {
+export const CheckoutView: React.FC<CheckoutViewProps> = ({ hotel, onBack, onConfirm, initialData }) => {
     const { t } = useLanguage();
     const today = toDateInputMin();
 
@@ -33,9 +34,9 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ hotel, onBack, onCon
         guest: '',
         phone: '',
         email: '',
-        checkIn: today,
-        checkOut: '',
-        guests: 1,
+        checkIn: initialData?.checkIn ?? today,
+        checkOut: initialData?.checkOut ?? '',
+        guests: initialData?.guests ?? 1,
         note: '',
         paymentMethod: 'cash',
     });
@@ -43,12 +44,23 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ hotel, onBack, onCon
     const [error, setError] = useState('');
 
     useEffect(() => { window.scrollTo(0, 0); }, []);
+    useEffect(() => {
+        if (initialData) {
+            setForm((f) => ({
+                ...f,
+                checkIn: initialData.checkIn ?? f.checkIn,
+                checkOut: initialData.checkOut ?? f.checkOut,
+                guests: initialData.guests ?? f.guests,
+            }));
+        }
+    }, [initialData?.checkIn, initialData?.checkOut, initialData?.guests]);
 
     const update = (part: Partial<BookingFormData>) =>
         setForm((f) => ({ ...f, ...part }));
 
     const nights = (() => {
-        if (!form.checkIn || !form.checkOut) return 0;
+        if (!form.checkIn) return 0;
+        if (!form.checkOut) return 1;
         const diff = new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime();
         return Math.max(0, Math.round(diff / (1000 * 60 * 60 * 24)));
     })();
@@ -56,20 +68,20 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ hotel, onBack, onCon
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        if (!form.checkIn || !form.checkOut) {
-            setError('Vui lòng chọn ngày nhận và trả phòng.');
+        if (!form.checkIn) {
+            setError(t('checkout.error_please_checkin'));
             return;
         }
-        if (nights <= 0) {
-            setError('Ngày trả phòng phải sau ngày nhận phòng.');
+        if (form.checkOut && nights <= 0) {
+            setError(t('checkout.error_checkout_after_checkin'));
             return;
         }
         setSubmitting(true);
         try {
             await onConfirm(form);
+            // Success: keep button disabled (no setSubmitting(false))
         } catch {
-            setError('Đặt phòng thất bại. Vui lòng thử lại.');
-        } finally {
+            setError(t('checkout.error_booking_failed'));
             setSubmitting(false);
         }
     };
@@ -132,10 +144,10 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ hotel, onBack, onCon
 
                     {/* Stay dates */}
                     <div className="checkout-form-section">
-                        <h3>Thông tin lưu trú</h3>
+                        <h3>{t('checkout.section_stay')}</h3>
                         <div className="form-row">
                             <div className="form-group">
-                                <label>Ngày nhận phòng</label>
+                                <label>{t('checkout.checkin_date')}</label>
                                 <input
                                     type="date"
                                     className={inputCls}
@@ -146,20 +158,19 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ hotel, onBack, onCon
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Ngày trả phòng</label>
+                                <label>{t('checkout.checkout_date')}</label>
                                 <input
                                     type="date"
                                     className={inputCls}
                                     min={form.checkIn || today}
                                     value={form.checkOut}
                                     onChange={(e) => update({ checkOut: e.target.value })}
-                                    required
                                 />
                             </div>
                         </div>
                         <div className="form-row">
                             <div className="form-group">
-                                <label>Số khách</label>
+                                <label>{t('checkout.guests_count')}</label>
                                 <input
                                     type="number"
                                     className={inputCls}
@@ -171,15 +182,15 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ hotel, onBack, onCon
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Hình thức thanh toán</label>
+                                <label>{t('checkout.payment_method')}</label>
                                 <select
                                     className={inputCls}
                                     value={form.paymentMethod}
                                     onChange={(e) => update({ paymentMethod: e.target.value })}
                                 >
-                                    <option value="cash">Tiền mặt khi nhận phòng</option>
-                                    <option value="bank_transfer">Chuyển khoản ngân hàng</option>
-                                    <option value="card">Thẻ tín dụng / Debit</option>
+                                    <option value="cash">{t('checkout.payment_cash')}</option>
+                                    <option value="bank_transfer">{t('checkout.payment_bank')}</option>
+                                    <option value="card">{t('checkout.payment_card')}</option>
                                 </select>
                             </div>
                         </div>
@@ -223,7 +234,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ hotel, onBack, onCon
 
                         <div className="summary-row">
                             <span>{t('checkout.capacity')}:</span>
-                            <strong>{form.guests} khách</strong>
+                            <strong>{form.guests} {t('checkout.guests_suffix')}</strong>
                         </div>
                         <div className="summary-row">
                             <span>{t('checkout.price_per_night')}:</span>
@@ -231,8 +242,8 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ hotel, onBack, onCon
                         </div>
                         {nights > 0 && (
                             <div className="summary-row">
-                                <span>Số đêm:</span>
-                                <strong>{nights} đêm</strong>
+                                <span>{t('checkout.nights_count')}:</span>
+                                <strong>{nights} {t('checkout.nights_suffix')}</strong>
                             </div>
                         )}
 
@@ -247,7 +258,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ hotel, onBack, onCon
                             style={{ marginTop: '24px', opacity: submitting ? 0.7 : 1 }}
                             disabled={submitting}
                         >
-                            {submitting ? 'Đang xử lý...' : t('checkout.finish_booking')}
+                            {submitting ? t('checkout.processing') : t('checkout.finish_booking')}
                         </button>
                         <p style={{ fontSize: '12px', color: 'var(--charcoal)', textAlign: 'center', marginTop: '16px' }}>
                             {t('checkout.agree_terms_note')}

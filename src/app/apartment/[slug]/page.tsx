@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Navbar } from "../../../components/Layout/Navbar";
 import { Footer } from "../../../components/Layout/Footer";
@@ -10,14 +10,19 @@ import { propertyToHotel } from "../../../lib/propertyToHotel";
 import { HotelCard } from "../../../components/HotelCard/HotelCard";
 import { useLanguage } from "@/context/LanguageContext";
 
+const RELATED_VISIBLE_DESKTOP = 3;
+const RELATED_SLIDE_MS = 4000;
+
 export default function ApartmentDetailPage() {
   const router = useRouter();
   const params = useParams();
   const slug = useMemo(() => (params?.slug ? String(params.slug) : null), [params?.slug]);
-  const [toastMsg, setToastMsg] = useState<React.ReactNode | null>(null);
   const { t } = useLanguage();
   const [hotel, setHotel] = useState<Hotel | null>(null);
   const [relatedHotels, setRelatedHotels] = useState<Hotel[]>([]);
+  const [relatedSlide, setRelatedSlide] = useState(0);
+  const relatedIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [relatedVisible, setRelatedVisible] = useState(RELATED_VISIBLE_DESKTOP);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -38,24 +43,25 @@ export default function ApartmentDetailPage() {
         return r.json();
       })
       .then((data) => {
-        if (data) setHotel(propertyToHotel(data));
-        else setHotel(null);
+        if (data) {
+          setHotel(propertyToHotel(data));
+          const category = (data.category ?? "").trim();
+          const relatedUrl = category
+            ? `/api/properties?category=${encodeURIComponent(category)}&limit=10`
+            : "/api/properties?limit=10";
+          fetch(relatedUrl)
+            .then((r) => r.json())
+            .then((res) => {
+              const list = res?.list ?? (Array.isArray(res) ? res : []);
+              const mapped = list.map((p: unknown) => propertyToHotel(p as Parameters<typeof propertyToHotel>[0]));
+              setRelatedHotels(mapped.filter((h: Hotel) => h.slug !== slug).slice(0, 6));
+              setRelatedSlide(0);
+            })
+            .catch(console.error);
+        } else setHotel(null);
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
-
-    fetch("/api/properties?limit=10")
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          const mapped = data.map(propertyToHotel);
-          setRelatedHotels(mapped.filter((h) => h.slug !== slug).slice(0, 6));
-        } else if (data && Array.isArray(data.data)) {
-          const mapped = data.data.map(propertyToHotel);
-          setRelatedHotels(mapped.filter((h: Hotel) => h.slug !== slug).slice(0, 6));
-        }
-      })
-      .catch(console.error);
   }, [slug]);
 
   useEffect(() => {
@@ -67,10 +73,29 @@ export default function ApartmentDetailPage() {
     };
   }, [hotel]);
 
-  const showToast = (msg: React.ReactNode) => {
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 4000);
-  };
+  const relatedCount = relatedHotels.length;
+  const relatedSlides = Math.max(1, Math.ceil(relatedCount / relatedVisible));
+
+  useEffect(() => {
+    const check = () => setRelatedVisible(window.innerWidth <= 600 ? 1 : RELATED_VISIBLE_DESKTOP);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  useEffect(() => {
+    setRelatedSlide((prev) => (prev >= relatedSlides ? 0 : prev));
+  }, [relatedSlides]);
+
+  useEffect(() => {
+    if (relatedCount <= relatedVisible) return;
+    relatedIntervalRef.current = setInterval(() => {
+      setRelatedSlide((prev) => (prev + 1) % relatedSlides);
+    }, RELATED_SLIDE_MS);
+    return () => {
+      if (relatedIntervalRef.current) clearInterval(relatedIntervalRef.current);
+    };
+  }, [relatedCount, relatedSlides, relatedVisible]);
 
   const goHome = () => router.push("/");
   const goList = () => router.push("/apartment");
@@ -81,11 +106,11 @@ export default function ApartmentDetailPage() {
   if (loading) {
     return (
       <>
-        <Navbar view="list" goHome={goHome} goList={goList} showToast={showToast} />
+        <Navbar view="list" goHome={goHome} goList={goList} />
         <main style={{ minHeight: "80vh", paddingTop: "100px", textAlign: "center" }}>
           <p>Đang tải...</p>
         </main>
-        <Footer goList={goList} showToast={showToast} />
+        <Footer goList={goList} />
       </>
     );
   }
@@ -93,29 +118,27 @@ export default function ApartmentDetailPage() {
   if (slug == null || notFound || !hotel) {
     return (
       <>
-        <Navbar view="list" goHome={goHome} goList={goList} showToast={showToast} />
+        <Navbar view="list" goHome={goHome} goList={goList} />
         <main style={{ minHeight: "80vh", paddingTop: "100px", textAlign: "center" }}>
           <p>Không tìm thấy khách sạn.</p>
           <button className="btn-gold" style={{ width: "auto", marginTop: 16 }} onClick={onBack}>
             Quay lại danh sách
           </button>
         </main>
-        <Footer goList={goList} showToast={showToast} />
+        <Footer goList={goList} />
       </>
     );
   }
 
   return (
     <>
-      {toastMsg && <div className="toast-overlay">{toastMsg}</div>}
-      <Navbar view="list" goHome={goHome} goList={goList} showToast={showToast} />
+      <Navbar view="list" goHome={goHome} goList={goList} />
       <main style={{ minHeight: "80vh" }}>
         <DetailsView
           hotel={hotel}
           onBack={onBack}
           onBook={onBook}
           onNavigateToDetails={onNavigateToDetails}
-          showToast={showToast}
         />
 
         {relatedHotels.length > 0 && (
@@ -123,15 +146,47 @@ export default function ApartmentDetailPage() {
             <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', color: 'var(--black)' }}>
               {t('details.related')}
             </h2>
-            <div className="hotels-grid">
-              {relatedHotels.map((h) => (
-                <HotelCard key={h.id} hotel={h} onClick={onNavigateToDetails} showToast={showToast} />
-              ))}
+            <div
+              className="blog-slider-wrap"
+              onMouseEnter={() => { if (relatedIntervalRef.current) clearInterval(relatedIntervalRef.current); relatedIntervalRef.current = null; }}
+              onMouseLeave={() => {
+                if (relatedCount > relatedVisible) {
+                  relatedIntervalRef.current = setInterval(() => setRelatedSlide((prev) => (prev + 1) % relatedSlides), RELATED_SLIDE_MS);
+                }
+              }}
+            >
+              <div className="blog-slider-viewport">
+                <div
+                  className="related-slider-track"
+                  style={{
+                    transform: `translateX(calc(-${relatedSlide} * (100% / ${relatedVisible}) - ${relatedSlide} * 16px))`,
+                  }}
+                >
+                  {relatedHotels.map((h) => (
+                    <div key={h.id} className="related-slide-card">
+                      <HotelCard hotel={h} onClick={onNavigateToDetails} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {relatedSlides > 1 && (
+                <div className="blog-slider-dots" style={{ marginTop: '24px' }}>
+                  {Array.from({ length: relatedSlides }).map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className={`blog-dot${i === relatedSlide ? ' active' : ''}`}
+                      onClick={() => setRelatedSlide(i)}
+                      aria-label={`Slide ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
       </main>
-      <Footer goList={goList} showToast={showToast} />
+      <Footer goList={goList} />
     </>
   );
 }

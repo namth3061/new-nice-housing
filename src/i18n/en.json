@@ -69,6 +69,7 @@
     "gallery_title": "Moments at Nine Housing"
   },
   "list": {
+    "eyebrow": "Discover",
     "found": "Found {{count}} apartments",
     "sort_popular": "Top Recommended",
     "sort_price_asc": "Lowest Price",
@@ -126,6 +127,7 @@
     "confirm_booking": "Confirm booking",
     "booking_info": "Booking information",
     "section_contact": "1. Contact information",
+    "section_stay": "Stay information",
     "section_special": "2. Special requests",
     "full_name": "Full name *",
     "full_name_placeholder": "John Doe",
@@ -133,6 +135,16 @@
     "phone_placeholder": "0912...",
     "email": "Email *",
     "email_placeholder": "email@...",
+    "checkin_date": "Check-in date",
+    "checkout_date": "Check-out date",
+    "guests_count": "Number of guests",
+    "guests_suffix": "guests",
+    "payment_method": "Payment method",
+    "payment_cash": "Cash on arrival",
+    "payment_bank": "Bank transfer",
+    "payment_card": "Credit / Debit card",
+    "nights_count": "Nights",
+    "nights_suffix": "night(s)",
     "note_label": "Note for hotel",
     "note_placeholder": "e.g. High floor, extra bed...",
     "order_summary": "Order summary",
@@ -142,12 +154,18 @@
     "promo_placeholder": "Enter code...",
     "total": "Total",
     "finish_booking": "Complete booking",
+    "processing": "Processing...",
     "agree_terms_note": "By clicking Complete, you agree to our Terms of Service.",
     "loading": "Loading...",
     "not_found": "Booking information not found.",
+    "booking_code": "Booking code",
     "success_title": "Congratulations! Your booking was successful!",
     "success_sent": "Confirmation code has been sent to your email.",
-    "success_thanks": "Thank you for choosing NineHousing!"
+    "success_will_contact": "We will contact you shortly.",
+    "success_thanks": "Thank you for choosing NineHousing!",
+    "error_please_checkin": "Please select check-in date.",
+    "error_checkout_after_checkin": "Check-out date must be after check-in date.",
+    "error_booking_failed": "Booking failed. Please try again."
   },
   "footer": {
     "desc": "Vietnam's leading apartment rental platform. Connecting you with thousands of stays.",
@@ -160,7 +178,8 @@
     "email_value": "contact@ninehousing.com",
     "domain_label": "Website: ",
     "domain_value": "ninehousing.com",
-    "contact_info": "Contact Info"
+    "contact_info": "Contact Info",
+    "call_now": "Call now"
   },
   "policy": {
     "eyebrow": "Security & Transparency",

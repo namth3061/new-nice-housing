@@ -69,6 +69,7 @@
     "gallery_title": "Khoảnh khắc tại Nine Housing"
   },
   "list": {
+    "eyebrow": "Khám phá",
     "found": "Tìm thấy {{count}} căn hộ",
     "sort_popular": "Đề xuất hàng đầu",
     "sort_price_asc": "Giá thấp nhất",
@@ -126,6 +127,7 @@
     "confirm_booking": "Xác nhận đặt phòng",
     "booking_info": "Thông tin đặt phòng",
     "section_contact": "1. Thông tin liên hệ",
+    "section_stay": "Thông tin lưu trú",
     "section_special": "2. Yêu cầu đặc biệt",
     "full_name": "Họ và tên *",
     "full_name_placeholder": "Nguyễn Văn A",
@@ -133,6 +135,16 @@
     "phone_placeholder": "0912...",
     "email": "Email *",
     "email_placeholder": "email@...",
+    "checkin_date": "Ngày nhận phòng",
+    "checkout_date": "Ngày trả phòng",
+    "guests_count": "Số khách",
+    "guests_suffix": "khách",
+    "payment_method": "Hình thức thanh toán",
+    "payment_cash": "Tiền mặt khi nhận phòng",
+    "payment_bank": "Chuyển khoản ngân hàng",
+    "payment_card": "Thẻ tín dụng / Debit",
+    "nights_count": "Số đêm",
+    "nights_suffix": "đêm",
     "note_label": "Ghi chú cho khách sạn",
     "note_placeholder": "Ví dụ: Cần phòng tầng cao, giường phụ...",
     "order_summary": "Tóm tắt đơn hàng",
@@ -142,12 +154,18 @@
     "promo_placeholder": "Nhập mã...",
     "total": "Tổng cộng",
     "finish_booking": "Hoàn tất đặt phòng",
+    "processing": "Đang xử lý...",
     "agree_terms_note": "Bằng việc bấm Hoàn tất, bạn đồng ý với Điều khoản dịch vụ.",
     "loading": "Đang tải...",
     "not_found": "Không tìm thấy thông tin đặt phòng.",
+    "booking_code": "Mã đặt phòng",
     "success_title": "Chúc mừng bạn đã đặt phòng thành công!",
     "success_sent": "Mã xác nhận đã được gửi qua Email.",
-    "success_thanks": "NineHousing cảm ơn bạn!"
+    "success_will_contact": "Chúng tôi sẽ liên hệ lại với bạn.",
+    "success_thanks": "NineHousing cảm ơn bạn!",
+    "error_please_checkin": "Vui lòng chọn ngày nhận phòng.",
+    "error_checkout_after_checkin": "Ngày trả phòng phải sau ngày nhận phòng.",
+    "error_booking_failed": "Đặt phòng thất bại. Vui lòng thử lại."
   },
   "footer": {
     "desc": "Nền tảng đặt thuê căn hộ hàng đầu Việt Nam. Kết nối bạn với hàng ngàn chỗ lưu trú.",
@@ -160,7 +178,8 @@
     "email_value": "contact@ninehousing.com",
     "domain_label": "Website: ",
     "domain_value": "ninehousing.com",
-    "contact_info": "Thông tin liên hệ"
+    "contact_info": "Thông tin liên hệ",
+    "call_now": "Gọi ngay"
   },
   "policy": {
     "eyebrow": "Bảo mật & Minh bạch",

@@ -10,16 +10,10 @@ import { useLanguage } from "@/context/LanguageContext";
 export default function TermsPage() {
   const router = useRouter();
   const { t } = useLanguage();
-  const [toastMsg, setToastMsg] = useState<React.ReactNode | null>(null);
-  const showToast = (msg: React.ReactNode) => {
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 4000);
-  };
 
   return (
     <>
-      {toastMsg && <div className="toast-overlay">{toastMsg}</div>}
-      <Navbar showToast={showToast} />
+      <Navbar />
       <main className="list-page page-transition" style={{ minHeight: "80vh" }}>
         <div className="section-header" style={{ marginBottom: "40px" }}>
           <div>
@@ -41,7 +35,7 @@ export default function TermsPage() {
           ))}
         </div>
       </main>
-      <Footer goList={() => router.push("/apartment")} showToast={showToast} />
+      <Footer goList={() => router.push("/apartment")} />
     </>
   );
 }

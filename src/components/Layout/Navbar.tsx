@@ -9,10 +9,9 @@ interface NavbarProps {
     view?: string;
     goHome?: () => void;
     goList?: () => void;
-    showToast: (msg: React.ReactNode) => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ view, goHome, goList, showToast }) => {
+export const Navbar: React.FC<NavbarProps> = ({ view, goHome, goList }) => {
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [settings, setSettings] = useState<any>(null);
@@ -43,7 +42,7 @@ export const Navbar: React.FC<NavbarProps> = ({ view, goHome, goList, showToast 
         <>
             <nav>
                 <Link href="/" className="logo" style={{ display: 'flex', alignItems: 'center' }}>
-                    <img src="/logo.png" alt="Nine Housing" style={{ height: '40px', width: 'auto' }} />
+                    <img src={settings?.logo_url || '/logo.png'} alt="Nine Housing" style={{ height: '40px', width: 'auto' }} />
                 </Link>
                 <ul className="nav-links">
                     <li><Link href="/" className={isHome ? 'active' : ''}>{t('common.home')}</Link></li>
@@ -66,7 +65,7 @@ export const Navbar: React.FC<NavbarProps> = ({ view, goHome, goList, showToast 
             <div className={`mobile-menu-overlay ${isMenuOpen ? 'open' : ''}`}>
                 <div className="mobile-menu-header">
                     <Link href="/" className="logo" onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center' }}>
-                        <img src="/logo.png" alt="Nine Housing" style={{ height: '32px', width: 'auto' }} />
+                        <img src={settings?.logo_url || '/logo.png'} alt="Nine Housing" style={{ height: '32px', width: 'auto' }} />
                     </Link>
                     <button className="mobile-menu-close" onClick={() => setIsMenuOpen(false)}><i className="fa-solid fa-xmark"></i></button>
                 </div>

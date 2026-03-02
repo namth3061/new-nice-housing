@@ -5,7 +5,7 @@ import { jwtVerify } from "jose";
 const ADMIN_COOKIE_NAME = "admin_token";
 const JWT_SECRET = process.env.JWT_SECRET ?? "Ninehousing-jwt-secret-change-in-production";
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (!pathname.startsWith("/admin")) {

@@ -67,7 +67,7 @@ export async function POST(request: Request) {
     const cookieStore = await cookies();
     cookieStore.set(ADMIN_COOKIE_NAME, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production" && (request.headers.get("x-forwarded-proto") === "https" || request.url.startsWith("https")),
       sameSite: "lax",
       maxAge: COOKIE_MAX_AGE,
       path: "/",

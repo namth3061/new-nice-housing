@@ -93,7 +93,7 @@ export default function AdminLoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
-            placeholder="admin@ninehousing.com"
+            placeholder="email"
             style={{
               width: "100%",
               padding: "12px 14px",

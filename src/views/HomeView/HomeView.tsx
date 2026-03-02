@@ -47,6 +47,17 @@ export const HomeView: React.FC<HomeViewProps> = ({ hotels, loading, onNavigateT
     const [destSlide, setDestSlide] = useState(0);
     const destIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+    const [settings, setSettings] = useState<any>(null);
+
+    useEffect(() => {
+        fetch("/api/settings")
+            .then(r => r.json())
+            .then(data => {
+                if (data && !data.error) setSettings(data);
+            })
+            .catch(() => { });
+    }, []);
+
     const [statsSlide, setStatsSlide] = useState(0);
     const statsIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -153,7 +164,14 @@ export const HomeView: React.FC<HomeViewProps> = ({ hotels, loading, onNavigateT
     return (
         <div className="page-transition">
             <section className="hero">
-                <div className="hero-bg"></div><div className="hero-overlay"></div>
+                <div
+                    className="hero-bg"
+                    style={
+                        settings?.banner_active && settings?.banner_image
+                            ? { backgroundImage: `radial-gradient(ellipse 60% 80% at 70% 50%, rgba(212, 160, 23, 0.12) 0%, transparent 70%), url('${settings.banner_image}')` }
+                            : {}
+                    }
+                ></div><div className="hero-overlay"></div>
                 <div className="hero-content">
                     <div className="hero-badge"><i className="fa-solid fa-crown"></i> {t('home.hero_badge')}</div>
                     <h1><span className="accent">{t('home.hero_title_1')}</span><br />{t('home.hero_title_2')}</h1>
@@ -172,14 +190,14 @@ export const HomeView: React.FC<HomeViewProps> = ({ hotels, loading, onNavigateT
                                 ))}
                             </select>
                         </div>
-                        <div className="search-field">
+                        {/* <div className="search-field">
                             <label><i className="fa-regular fa-calendar"></i> {t('details.checkin')}</label>
                             <input type="date" />
                         </div>
                         <div className="search-field">
                             <label><i className="fa-regular fa-calendar"></i> {t('details.checkout')}</label>
                             <input type="date" />
-                        </div>
+                        </div> */}
                         <button type="button" className="btn-search" onClick={goToSearchResult}>
                             <i className="fa-solid fa-magnifying-glass"></i> {t('common.search')}
                         </button>

@@ -24,6 +24,9 @@ export default function AdminSettingsPage() {
     phone_value: "",
     email_value: "",
     domain_value: "",
+    banner_active: false,
+    banner_image: "",
+    banner_link: "",
   });
 
   useEffect(() => {
@@ -39,8 +42,38 @@ export default function AdminSettingsPage() {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setSettings((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setSettings((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload/image", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setSettings((prev) => ({ ...prev, banner_image: data.url }));
+        setMsg({ type: "success", text: "Tải ảnh lên thành công!" });
+        setTimeout(() => setMsg(null), 3000);
+      } else {
+        throw new Error(data.error || "Upload failed");
+      }
+    } catch {
+      setMsg({ type: "error", text: "Có lỗi khi tải ảnh lên." });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -104,6 +137,62 @@ export default function AdminSettingsPage() {
           {msg.text}
         </div>
       )}
+
+      {/* BANNER MANAGEMENT */}
+      <div className="admin-form-card" style={{ marginBottom: 24 }}>
+        <div className="admin-form-card-header">
+          <Globe size={14} style={{ color: "var(--a-gold)" }} />
+          <span className="admin-form-card-header-title">Quản lý Banner Top</span>
+          <div className="admin-form-card-header-dot" />
+        </div>
+        <div className="admin-form-card-body" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+
+          <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontWeight: 600 }}>
+            <input
+              type="checkbox"
+              name="banner_active"
+              checked={settings.banner_active}
+              onChange={handleChange}
+              style={{ width: "18px", height: "18px", accentColor: "var(--a-gold)", cursor: "pointer" }}
+            />
+            Bật hiển thị Banner trên Website
+          </label>
+
+          <div className="admin-form-field">
+            <FieldLabel icon={Globe}>Hình ảnh Banner</FieldLabel>
+            {settings.banner_image && (
+              <div style={{ marginBottom: "12px", borderRadius: "8px", overflow: "hidden", border: "1px solid #e2e8f0" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={settings.banner_image} alt="Banner Preview" style={{ width: "100%", maxHeight: "150px", objectFit: "cover", display: "block" }} />
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="admin-form-input"
+              style={{ padding: "8px" }}
+              disabled={saving}
+            />
+            <p style={{ fontSize: "12px", color: "#64748b", marginTop: "6px" }}>
+              Upload ảnh ngang (ví dụ: 1920x200px) để hiển thị đẹp nhất.
+            </p>
+          </div>
+
+          <div className="admin-form-field">
+            <FieldLabel icon={Globe}>Đường dẫn chuyển hướng (Link)</FieldLabel>
+            <input
+              type="text"
+              name="banner_link"
+              value={settings.banner_link}
+              onChange={handleChange}
+              className="admin-form-input"
+              placeholder="VD: /apartment hoặc https://example.com"
+            />
+          </div>
+
+        </div>
+      </div>
 
       <div className="admin-form-card">
         <div className="admin-form-card-header">

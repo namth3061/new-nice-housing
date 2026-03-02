@@ -15,6 +15,18 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ view, goHome, goList, showToast }) => {
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [settings, setSettings] = useState<any>(null);
+
+    useEffect(() => {
+        fetch("/api/settings")
+            .then(r => r.json())
+            .then(data => {
+                if (data && !data.error) {
+                    setSettings(data);
+                }
+            })
+            .catch(() => { });
+    }, []);
 
     const isHome = pathname === '/';
     const isApartmentList = pathname === '/apartment';
@@ -46,7 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({ view, goHome, goList, showToast 
                         <span style={{ opacity: 0.5 }}>|</span>
                         <span style={{ cursor: 'pointer', opacity: language === 'en' ? 1 : 0.5 }} onClick={() => setLanguage('en')}>EN</span>
                     </div>
-                    <Link href="/admin/login" className="btn-outline" style={{ width: 'auto', textDecoration: 'none' }}>{t('common.login')}</Link>
+                    {/* <Link href="/admin/login" className="btn-outline" style={{ width: 'auto', textDecoration: 'none' }}>{t('common.login')}</Link> */}
                 </div>
                 <button className="mobile-menu-btn" onClick={() => setIsMenuOpen(true)}><i className="fa-solid fa-bars"></i></button>
             </nav>
@@ -71,7 +83,7 @@ export const Navbar: React.FC<NavbarProps> = ({ view, goHome, goList, showToast 
                         <span style={{ opacity: 0.4 }}>|</span>
                         <span style={{ cursor: 'pointer', opacity: language === 'en' ? 1 : 0.4 }} onClick={() => setLanguage('en')}>EN</span>
                     </div>
-                    <Link href="/admin/login" className="btn-outline" onClick={() => setIsMenuOpen(false)} style={{ textAlign: 'center', textDecoration: 'none', width: '100%' }}>{t('common.login')}</Link>
+                    {/* <Link href="/admin/login" className="btn-outline" onClick={() => setIsMenuOpen(false)} style={{ textAlign: 'center', textDecoration: 'none', width: '100%' }}>{t('common.login')}</Link> */}
                 </div>
             </div>
         </>

@@ -30,7 +30,7 @@ export default function App() {
   }, [view, activeHotel]);
 
   useEffect(() => {
-    fetch("/api/properties")
+    fetch("/api/properties?status=available")
       .then((r) => r.json())
       .then((data) => {
         const list = Array.isArray(data) ? data : [];

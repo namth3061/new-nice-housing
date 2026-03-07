@@ -94,10 +94,15 @@ function formatPrice(n: number, type?: string) {
   return `${formatted} /${type || 'month'}`;
 }
 
-export async function findAllProperties(filters?: { search?: string; stars?: string }) {
+export async function findAllProperties(filters?: { search?: string; stars?: string; status?: string }) {
   let sql = `SELECT * FROM properties WHERE 1=1`;
   const params: unknown[] = [];
   let i = 1;
+  if (filters?.status) {
+    sql += ` AND status = $${i}`;
+    params.push(filters.status);
+    i++;
+  }
   if (filters?.search) {
     sql += ` AND (name ILIKE $${i} OR location ILIKE $${i})`;
     params.push(`%${filters.search}%`);

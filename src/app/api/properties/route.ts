@@ -11,6 +11,7 @@ export async function GET(request: Request) {
     const amenities = searchParams.get("amenities") ?? undefined;
     const province = searchParams.get("province") ?? undefined;
     const category = searchParams.get("category") ?? undefined;
+    const status = searchParams.get("status") ?? undefined;
 
     const pageParam = searchParams.get("page");
     const limitParam = searchParams.get("limit");
@@ -36,7 +37,7 @@ export async function GET(request: Request) {
       return NextResponse.json(result);
     }
 
-    const list = await Property.findAllProperties({ search, stars });
+    const list = await Property.findAllProperties({ search, stars, status });
     return NextResponse.json(list);
   } catch (e) {
     console.error("GET /api/properties", e);

@@ -19,9 +19,6 @@ export const metadata: Metadata = {
     default: "Nine Housing - Đặt phòng & Thuê nhà dễ dàng",
   },
   description: "Hệ thống đặt phòng và thuê nhà Nine Housing",
-  icons: {
-    icon: "/favicon.ico",
-  },
 };
 
 export default function RootLayout({

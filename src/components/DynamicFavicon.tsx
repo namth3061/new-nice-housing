@@ -10,15 +10,21 @@ export function DynamicFavicon() {
       .then((r) => r.json())
       .then((data) => {
         const href = data?.favicon_url && typeof data.favicon_url === "string" ? data.favicon_url : DEFAULT_FAVICON;
-        let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-        if (!link) {
-          link = document.createElement("link");
-          link.rel = "icon";
-          document.head.appendChild(link);
-        }
+
+        // Safely remove existing favicons
+        document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]').forEach(el => {
+          if (el.parentNode) {
+            el.parentNode.removeChild(el);
+          }
+        });
+
+        // Add new favicon
+        const link = document.createElement("link");
+        link.rel = "icon";
         link.href = href;
+        document.head.appendChild(link);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   return null;

@@ -26,9 +26,33 @@ function toDateInputMin() {
     return new Date().toISOString().split('T')[0];
 }
 
+/** Count whole months between two date strings (checkIn ≤ checkOut). */
+function countMonths(checkIn: string, checkOut: string): number {
+    const a = new Date(checkIn);
+    const b = new Date(checkOut);
+    const months = (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
+    return Math.max(1, months);
+}
+
+/** Count whole days between two date strings. */
+function countNights(checkIn: string, checkOut: string): number {
+    const diff = new Date(checkOut).getTime() - new Date(checkIn).getTime();
+    return Math.max(1, Math.round(diff / (1000 * 60 * 60 * 24)));
+}
+
+function formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0,
+    }).format(amount);
+}
+
 export const CheckoutView: React.FC<CheckoutViewProps> = ({ hotel, onBack, onConfirm, initialData }) => {
     const { t } = useLanguage();
     const today = toDateInputMin();
+    const priceType = hotel.priceType ?? 'month';
+    const isByDay = priceType === 'day';
 
     const [form, setForm] = useState<BookingFormData>({
         guest: '',
@@ -58,12 +82,15 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ hotel, onBack, onCon
     const update = (part: Partial<BookingFormData>) =>
         setForm((f) => ({ ...f, ...part }));
 
-    const nights = (() => {
-        if (!form.checkIn) return 0;
-        if (!form.checkOut) return 1;
-        const diff = new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime();
-        return Math.max(0, Math.round(diff / (1000 * 60 * 60 * 24)));
+    // Count of booking units (nights or months). Default 1 if no checkOut.
+    const unitCount = (() => {
+        if (!form.checkIn || !form.checkOut) return 1;
+        return isByDay
+            ? countNights(form.checkIn, form.checkOut)
+            : countMonths(form.checkIn, form.checkOut);
     })();
+
+    const totalAmount = (hotel.rawPrice ?? 0) * unitCount;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -72,14 +99,20 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ hotel, onBack, onCon
             setError(t('checkout.error_please_checkin'));
             return;
         }
-        if (form.checkOut && nights <= 0) {
-            setError(t('checkout.error_checkout_after_checkin'));
-            return;
+        if (form.checkOut) {
+            if (isByDay && countNights(form.checkIn, form.checkOut) <= 0) {
+                setError(t('checkout.error_checkout_after_checkin'));
+                return;
+            }
+            if (!isByDay && new Date(form.checkOut) <= new Date(form.checkIn)) {
+                setError(t('checkout.error_checkout_after_checkin'));
+                return;
+            }
         }
         setSubmitting(true);
         try {
             await onConfirm(form);
-            // Success: keep button disabled (no setSubmitting(false))
+            // Success: keep button disabled
         } catch {
             setError(t('checkout.error_booking_failed'));
             setSubmitting(false);
@@ -237,19 +270,17 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ hotel, onBack, onCon
                             <strong>{form.guests} {t('checkout.guests_suffix')}</strong>
                         </div>
                         <div className="summary-row">
-                            <span>{t('checkout.price_per_night')}:</span>
+                            <span>{isByDay ? t('checkout.price_per_night') : t('checkout.price_per_month')}:</span>
                             <strong>{hotel.price}</strong>
                         </div>
-                        {nights > 0 && (
-                            <div className="summary-row">
-                                <span>{t('checkout.nights_count')}:</span>
-                                <strong>{nights} {t('checkout.nights_suffix')}</strong>
-                            </div>
-                        )}
+                        <div className="summary-row">
+                            <span>{isByDay ? 'Nights' : 'Months'}:</span>
+                            <strong>{unitCount} {isByDay ? 'night(s)' : 'month(s)'}</strong>
+                        </div>
 
                         <div className="summary-total">
                             <span>{t('checkout.total')}:</span>
-                            <span>{hotel.price}</span>
+                            <span>{formatCurrency(totalAmount)}</span>
                         </div>
 
                         <button

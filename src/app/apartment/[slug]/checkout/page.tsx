@@ -74,18 +74,35 @@ export default function CheckoutPage() {
   const onConfirm = useCallback(async (data: BookingFormData) => {
     if (!hotel) return;
 
-    const nights = (() => {
-      if (!data.checkIn) return 1;
-      if (!data.checkOut) return 1;
-      const diff = new Date(data.checkOut).getTime() - new Date(data.checkIn).getTime();
-      return Math.max(1, Math.round(diff / (1000 * 60 * 60 * 24)));
+    const priceType = hotel.priceType ?? 'month';
+    const isByDay = priceType === 'day';
+
+    // Calculate the number of billing units (nights or months), minimum 1
+    const count = (() => {
+      if (!data.checkIn || !data.checkOut) return 1;
+      if (isByDay) {
+        const diff = new Date(data.checkOut).getTime() - new Date(data.checkIn).getTime();
+        return Math.max(1, Math.round(diff / (1000 * 60 * 60 * 24)));
+      } else {
+        const a = new Date(data.checkIn);
+        const b = new Date(data.checkOut);
+        const months = (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
+        return Math.max(1, months);
+      }
     })();
 
+    // Default checkOut if not provided
     const checkOutValue = data.checkOut || (() => {
       const d = new Date(data.checkIn);
-      d.setDate(d.getDate() + 1);
+      if (isByDay) {
+        d.setDate(d.getDate() + 1);
+      } else {
+        d.setMonth(d.getMonth() + 1);
+      }
       return d.toISOString().split("T")[0];
     })();
+
+    const total = hotel.rawPrice ? hotel.rawPrice * count : 0;
 
     const res = await fetch("/api/bookings", {
       method: "POST",
@@ -98,9 +115,9 @@ export default function CheckoutPage() {
         phone: data.phone,
         checkIn: data.checkIn,
         checkOut: checkOutValue,
-        nights,
+        nights: count,
         guests: data.guests,
-        total: hotel.rawPrice ? hotel.rawPrice * nights : 0,
+        total,
         note: data.note,
         paymentMethod: data.paymentMethod,
         status: "Pending",

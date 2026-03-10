@@ -10,6 +10,7 @@ export type PropertyFromApi = {
   images: string[];
   rawPrice: number;
   price: string;
+  priceType?: string;
   stars: number;
   rating: number;
   reviews: string;
@@ -45,6 +46,7 @@ export function propertyToHotel(p: PropertyFromApi): Hotel {
     name: p.name,
     price: p.price,
     rawPrice: p.rawPrice,
+    priceType: p.priceType ?? 'month',
     stars: p.stars,
     rating: p.rating,
     reviews: p.reviews ?? "0",

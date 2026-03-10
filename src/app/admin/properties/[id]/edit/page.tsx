@@ -119,6 +119,7 @@ export default function EditPropertyPage() {
   const initialLocationRef = useRef<{ province?: string; district?: string; ward?: string }>({});
   const locationResolvedRef = useRef({ province: false, district: false, ward: false });
   const [uploadingCount, setUploadingCount] = useState(0);
+  const [imageError, setImageError] = useState("");
 
   useEffect(() => {
     fetch("https://provinces.open-api.vn/api/p/")
@@ -234,6 +235,7 @@ export default function EditPropertyPage() {
   const update = (part: Partial<FormData>) => setForm((f) => ({ ...f, ...part }));
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setImageError("");
     const files = e.target.files;
     if (!files?.length) return;
     const newFiles = Array.from(files).slice(0, 10 - form.imagePreviews.length);
@@ -299,6 +301,11 @@ export default function EditPropertyPage() {
   };
 
   const handleSubmit = async () => {
+    if (form.imagePreviews.length === 0) {
+      setStep(2);
+      setImageError("Vui lòng tải lên ít nhất 1 ảnh cho căn hộ.");
+      return;
+    }
     setSaving(true);
     try {
       const provinceName = provinces.find((p) => String(p.code) === form.province)?.name ?? "";
@@ -561,6 +568,11 @@ export default function EditPropertyPage() {
 
           {step === 2 && (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {imageError && (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "8px", padding: "10px 14px", color: "#dc2626", fontSize: "13px", fontWeight: 500 }}>
+                  <span>⚠️</span> {imageError}
+                </div>
+              )}
               {form.imagePreviews.length === 0 ? (
                 <label className="admin-form-upload-zone">
                   <div className="admin-form-upload-icon">
@@ -712,7 +724,18 @@ export default function EditPropertyPage() {
             Quay lại
           </button>
           {step < 4 ? (
-            <button type="button" onClick={() => setStep((s) => s + 1)} className="admin-form-submit">
+            <button
+              type="button"
+              onClick={() => {
+                if (step === 2 && form.imagePreviews.length === 0) {
+                  setImageError("Vui lòng tải lên ít nhất 1 ảnh cho căn hộ.");
+                  return;
+                }
+                setImageError("");
+                setStep((s) => s + 1);
+              }}
+              className="admin-form-submit"
+            >
               Bước tiếp theo
             </button>
           ) : (

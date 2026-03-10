@@ -150,6 +150,7 @@
     "order_summary": "Order summary",
     "capacity": "Capacity",
     "price_per_night": "Price per night",
+    "price_per_month": "Price per month",
     "promo_code": "Promo code",
     "promo_placeholder": "Enter code...",
     "total": "Total",
